@@ -1,0 +1,723 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>ADDU SHS COMPASS - Assistant Principal Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#f4f7fb;--card:#fff;--muted:#6b7280;--accent:#2F3590;--accent-dark:#1f2560;
+  --danger:#ef4444;--warning:#f59e0b;--success:#10b981;--border:#e6eef0;--radius:10px;
+  --primary:#2F3590;--gold:#FFD700;
+}
+*{box-sizing:border-box}
+body{font-family:Inter,system-ui,Segoe UI,Roboto,Arial;background:var(--bg);margin:0;color:#0f172a}
+header{background:linear-gradient(135deg,#2F3590,#4a51b8);padding:24px 32px;color:#fff;display:flex;align-items:center;justify-content:space-between;border-bottom:4px solid #FFD700;box-shadow:0 4px 12px rgba(47,53,144,0.15)}
+.logo-placeholder{
+  width:70px;
+  height:70px;
+  background-color:#fff;
+  border:2px solid #FFD700;
+  border-radius:8px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:10px;
+  text-align:center;
+  color:#2F3590;
+  padding:4px;
+  cursor:pointer;
+  transition:all 0.2s;
+}
+.logo-placeholder:hover{
+  box-shadow:0 0 12px rgba(255,215,0,0.6);
+  border-color:#FFC700;
+}
+.logo-placeholder img{
+  max-width:100%;
+  max-height:100%;
+  border-radius:6px;
+}
+.ap-info{
+  text-align:right;
+}
+.ap-info .ap-name{
+  font-size:17px;
+  font-weight:700;
+  margin:0;
+  letter-spacing:0.3px;
+}
+.ap-info .ap-title{
+  font-size:14px;
+  opacity:0.9;
+  margin:2px 0 0 0;
+}
+.header-center{
+  flex:1;
+  text-align:center;
+}
+.header-center h1{
+  font-size:26px;
+  margin:0 0 6px 0;
+  font-weight:800;
+  letter-spacing:0.5px;
+}
+.header-center .subtitle{
+  font-size:12px;
+  opacity:0.9;
+  margin:3px 0;
+  font-weight:400;
+}
+.header-center .school-name{
+  font-size:12px;
+  opacity:0.85;
+  margin:2px 0 0 0;
+  font-style:italic;
+}
+main{max-width:1600px;margin:20px auto;padding:18px}
+.card{background:var(--card);padding:16px;border-radius:var(--radius);box-shadow:0 8px 20px rgba(2,6,23,0.06);border:1px solid var(--border);margin-bottom:16px}
+select,input,button,textarea{font:inherit}
+input,select,textarea{width:100%;padding:6px 8px;border-radius:6px;border:1px solid #dbe7e6}
+textarea{min-height:120px;resize:vertical}
+button{background:var(--accent);color:#fff;border:none;padding:8px 12px;border-radius:8px;cursor:pointer;width:auto}
+button.secondary{background:#e6eef0;color:#2F3590;font-weight:600}
+button.danger{background:var(--danger);color:#fff}
+button.warning{background:var(--warning);color:#fff}
+button.success{background:var(--success);color:#fff}
+.small{font-size:13px;color:var(--muted)}
+.muted{color:var(--muted)}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:16px}
+.stat-card{background:#fff;padding:16px;border-radius:8px;border:1px solid var(--border);text-align:center}
+.stat-card.danger{border-color:var(--danger);background:#fff5f5}
+.stat-card.warning{border-color:var(--warning);background:#fffbeb}
+.stat-card.success{border-color:var(--success);background:#f0fdf4}
+.stat-card.primary{border-color:var(--primary);background:#eff6ff}
+.stat-value{font-size:32px;font-weight:700;margin:8px 0}
+.stat-label{font-size:13px;color:var(--muted);text-transform:uppercase}
+.tabs{display:flex;gap:8px;margin-bottom:16px;border-bottom:2px solid var(--border)}
+.tab{padding:10px 16px;background:none;border:none;border-radius:0;cursor:pointer;font-weight:500;color:var(--muted);border-bottom:3px solid transparent;margin-bottom:-2px}
+.tab.active{color:var(--accent);border-bottom-color:#FFD700}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+table{width:100%;border-collapse:collapse}
+th,td{padding:10px;text-align:left;border-bottom:1px solid var(--border)}
+th{background:#f9fafb;font-weight:600;font-size:13px;color:var(--muted);text-transform:uppercase}
+tr:hover{background:#f9fafb}
+.badge{display:inline-block;padding:4px 10px;border-radius:12px;font-size:11px;font-weight:700;text-transform:uppercase}
+.badge.resolved{background:#d1fae5;color:#065f46}
+.badge.summer_class{background:#fee2e2;color:#991b1b}
+.badge.pending{background:#fef3c7;color:#92400e}
+.badge.active{background:#dbeafe;color:#1e40af}
+.badge.escalated_to_ap{background:#fef3c7;color:#92400e}
+.badge.under_ap_intervention{background:#dbeafe;color:#1e40af}
+.filter-bar{display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+.editable-header{cursor:pointer;padding:2px 4px;border-radius:4px;transition:background 0.2s}
+.editable-header:hover{background-color:rgba(255,255,255,0.2)}
+.chart-container{position:relative;height:300px}
+.department-card{background:white;padding:12px;border-radius:8px;border-left:4px solid var(--accent);margin-bottom:8px}
+.department-name{font-weight:700;margin-bottom:8px}
+.department-stats{display:flex;gap:16px;font-size:13px;flex-wrap:wrap}
+.department-stats span{color:var(--muted)}
+.case-card{background:white;border-radius:8px;padding:16px;margin-bottom:12px;border-left:4px solid #dc2626;box-shadow:0 2px 4px rgba(0,0,0,0.05)}
+.case-card.resolved{border-left-color:var(--success);background:#f0fdf4}
+.case-card.summer_class{border-left-color:#7c2d12;background:#fff7ed}
+.case-header{display:flex;justify-content:space-between;align-items:start;margin-bottom:12px}
+.student-name{font-size:16px;font-weight:700;color:#0f172a}
+.case-meta{font-size:12px;color:var(--muted);margin-bottom:12px}
+.case-meta span{margin-right:16px}
+.intervention-section{background:#f9fafb;padding:12px;border-radius:6px;margin-top:12px;font-size:13px}
+.intervention-section strong{display:block;margin-bottom:6px;color:#374151}
+.action-buttons{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.action-buttons button{padding:6px 12px;font-size:13px}
+.timeline{margin-top:12px;padding-left:12px;border-left:2px solid #e5e7eb}
+.timeline-entry{margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid #f3f4f6;font-size:12px}
+.timeline-entry:last-child{border-bottom:none}
+.timeline-header{font-weight:600;color:#374151;margin-bottom:4px}
+.timeline-content{color:#6b7280}
+.timeline-meta{color:#9ca3af;font-size:11px;margin-top:4px}
+.modal{position:fixed;inset:0;background:rgba(2,6,23,0.45);display:none;align-items:center;justify-content:center;padding:16px;z-index:1000}
+.modal .box{width:700px;background:#fff;padding:18px;border-radius:10px;max-height:90vh;overflow:auto}
+label{font-size:13px;color:#243b4a;display:block;margin-bottom:4px}
+</style>
+</head>
+<body>
+<header>
+<div class="logo-placeholder" id="logoPlaceholder" title="Click to upload AdDU logo">
+<span id="logoText">LOGO</span>
+<img id="logoImg" style="display:none" alt="School Logo">
+</div>
+<input type="file" id="logoUpload" accept="image/*" style="display:none;">
+
+<div class="header-center">
+<h1>COMPASS</h1>
+<div class="subtitle">Comprehensive Monitoring & Progress Assessment Support System</div>
+<div class="school-name">Ateneo de Davao University - Senior High School</div>
+</div>
+
+<div class="ap-info">
+<div class="ap-name editable-header" id="apName" title="Click to edit">Dr. Maria Santos</div>
+<div class="ap-title editable-header" id="apTitle" title="Click to edit">Assistant Principal for Academics</div>
+</div>
+</header>
+
+<main>
+<section class="card">
+<h2 style="margin:0 0 16px 0;font-size:20px">Academic Intervention Overview - All School Cases</h2>
+<div class="stat-grid">
+<div class="stat-card primary"><div class="stat-label">Total Cases</div><div class="stat-value" id="totalCases">0</div><div class="small">All interventions</div></div>
+<div class="stat-card success"><div class="stat-label">Resolved</div><div class="stat-value" style="color:var(--success)" id="resolvedCases">0</div><div class="small">Successfully improved</div></div>
+<div class="stat-card warning"><div class="stat-label">Active Cases</div><div class="stat-value" style="color:var(--warning)" id="activeCases">0</div><div class="small">Under intervention</div></div>
+<div class="stat-card danger"><div class="stat-label">Summer Class</div><div class="stat-value" style="color:var(--danger)" id="summerCases">0</div><div class="small">Below standard</div></div>
+</div>
+<div style="margin-top:16px;padding:12px;background:#f9fafb;border-radius:6px"><strong>Success Rate:</strong> <span id="successRate">0%</span></div>
+</section>
+
+<div class="tabs">
+<button class="tab active" id="tabOverview" onclick="switchTab('overview')">Overview</button>
+<button class="tab" id="tabResolution" onclick="switchTab('resolution')">Resolution Report</button>
+<button class="tab" id="tabSections" onclick="switchTab('sections')">By Section</button>
+<button class="tab" id="tabSubjects" onclick="switchTab('subjects')">By Subject</button>
+<button class="tab" id="tabCases" onclick="switchTab('cases')">All Cases</button>
+<button class="tab" id="tabSummer" onclick="switchTab('summer')">Summer Class List</button>
+</div>
+
+<div id="overviewView">
+<div class="grid-2">
+<div class="card"><h3 style="margin:0 0 12px 0;font-size:16px">Current Status Distribution</h3><div class="chart-container"><canvas id="statusChart"></canvas></div></div>
+<div class="card"><h3 style="margin:0 0 12px 0;font-size:16px">Cases by Grade Level</h3><div class="chart-container"><canvas id="gradeChart"></canvas></div></div>
+</div>
+<div class="card"><h3 style="margin:0 0 12px 0;font-size:16px">Top 5 Sections with Most Interventions</h3><div id="topSections"></div></div>
+</div>
+
+<div id="resolutionView" style="display:none">
+<div class="card">
+<h3 style="margin:0 0 16px 0;font-size:18px">Resolution Success by Level</h3>
+<div class="stat-grid">
+<div class="stat-card"><div class="stat-label">Teacher Level</div><div class="stat-value" id="teacherResolved">0</div><div class="small">Resolved early</div></div>
+<div class="stat-card"><div class="stat-label">Adviser Level</div><div class="stat-value" id="adviserResolved">0</div><div class="small">Resolved by adviser</div></div>
+<div class="stat-card"><div class="stat-label">Chairperson Level</div><div class="stat-value" id="chairResolved">0</div><div class="small">Resolved by chair</div></div>
+<div class="stat-card"><div class="stat-label">AP Level</div><div class="stat-value" id="apResolved">0</div><div class="small">Required AP intervention</div></div>
+</div>
+</div>
+<div class="grid-2">
+<div class="card"><h3 style="margin:0 0 12px 0;font-size:16px">Resolution by Level</h3><div class="chart-container"><canvas id="resolutionChart"></canvas></div></div>
+<div class="card"><h3 style="margin:0 0 12px 0;font-size:16px">Current Intervention Level</h3><div class="chart-container"><canvas id="currentLevelChart"></canvas></div></div>
+</div>
+<div class="card">
+<h3 style="margin:0 0 12px 0;font-size:16px">Detailed Performance by Level</h3>
+<table>
+<thead><tr><th>Level</th><th>Total Reached</th><th>Currently Active</th><th>Resolved</th><th>Success Rate</th></tr></thead>
+<tbody id="levelPerformanceTable"></tbody>
+</table>
+</div>
+</div>
+
+<div id="sectionsView" style="display:none">
+<div class="card">
+<h3 style="margin:0 0 16px 0;font-size:18px">Performance by Section</h3>
+<div class="filter-bar">
+<label class="small">Grade Level:</label>
+<select id="gradeLevelFilter" style="width:auto">
+<option value="">All Grades</option>
+<option value="11">Grade 11</option>
+<option value="12">Grade 12</option>
+</select>
+</div>
+<div id="sectionsList"></div>
+</div>
+</div>
+
+<div id="subjectsView" style="display:none">
+<div class="card">
+<h3 style="margin:0 0 16px 0;font-size:18px">Performance by Subject</h3>
+<table id="subjectsTable">
+<thead><tr><th>Subject</th><th>Total Cases</th><th>Resolved</th><th>Active</th><th>Summer Class</th><th>Success Rate</th></tr></thead>
+<tbody id="subjectsTableBody"></tbody>
+</table>
+</div>
+</div>
+
+<div id="casesView" style="display:none">
+<div class="card">
+<h3 style="margin:0 0 16px 0;font-size:18px">All School Cases</h3>
+<div class="filter-bar">
+<label class="small">Status:</label>
+<select id="caseStatusFilter" style="width:auto">
+<option value="all">All</option>
+<option value="resolved">Resolved</option>
+<option value="active">Active</option>
+<option value="summer_class">Summer Class</option>
+</select>
+<label class="small">Level:</label>
+<select id="caseLevelFilter" style="width:auto">
+<option value="all">All Levels</option>
+<option value="Teacher">Teacher Level</option>
+<option value="Adviser">Adviser Level</option>
+<option value="Chairperson">Chairperson Level</option>
+<option value="AP">AP Level</option>
+</select>
+<label class="small">Section:</label>
+<select id="caseSectionFilter" style="width:auto;min-width:150px"><option value="">All Sections</option></select>
+<button id="refreshBtn" class="secondary">🔄 Refresh</button>
+</div>
+<div id="casesList"></div>
+</div>
+</div>
+
+<div id="summerView" style="display:none">
+<div class="card">
+<h3 style="margin:0 0 16px 0;font-size:18px">Students Required for Summer Class</h3>
+<p class="small muted">Students who received "Below Standard" grade after all intervention attempts</p>
+<table id="summerTable">
+<thead><tr><th>Student Name</th><th>Subject</th><th>Section</th><th>Teacher</th><th>Date Tagged</th><th>Actions</th></tr></thead>
+<tbody id="summerTableBody"></tbody>
+</table>
+</div>
+</div>
+</main>
+
+<div id="modal" class="modal"><div class="box" id="modalBox"></div></div>
+
+<script>
+const ESCALATIONS_KEY='compass_escalations'
+const AP_KEY='compass_ap_info'
+const LOGO_KEY='compass_logo'
+
+function loadAPInfo(){try{const raw=localStorage.getItem(AP_KEY);if(!raw)return{name:'Dr. Maria Santos',title:'Assistant Principal for Academics'};return JSON.parse(raw)}catch(e){return{name:'Dr. Maria Santos',title:'Assistant Principal for Academics'}}}
+function saveAPInfo(info){localStorage.setItem(AP_KEY,JSON.stringify(info))}
+function loadLogo(){try{return localStorage.getItem(LOGO_KEY)}catch(e){return null}}
+function saveLogo(dataUrl){ 
+  try {
+    localStorage.setItem(LOGO_KEY, dataUrl)
+  } catch(e) {
+    alert('Logo file too large for storage. Please use a smaller image.')
+  }
+}
+function loadEscalations(){try{const raw=localStorage.getItem(ESCALATIONS_KEY);if(!raw)return[];return JSON.parse(raw)}catch(e){return[]}}
+function saveEscalations(escalations){localStorage.setItem(ESCALATIONS_KEY,JSON.stringify(escalations))}
+
+let apInfo=loadAPInfo()
+let currentTab='overview'
+let allCases=[]
+
+const apNameEl=document.getElementById('apName')
+const apTitleEl=document.getElementById('apTitle')
+const logoPlaceholder=document.getElementById('logoPlaceholder')
+const logoUpload=document.getElementById('logoUpload')
+const logoImg=document.getElementById('logoImg')
+const logoText=document.getElementById('logoText')
+const modal=document.getElementById('modal')
+const modalBox=document.getElementById('modalBox')
+
+function updateAPDisplay(){apNameEl.textContent=apInfo.name;apTitleEl.textContent=apInfo.title}
+updateAPDisplay()
+
+function updateLogoDisplay(){
+  const logoData=loadLogo()
+  if(logoData){
+    logoImg.src=logoData
+    logoImg.style.display='block'
+    logoText.style.display='none'
+  }else{
+    logoImg.style.display='none'
+    logoText.style.display='block'
+  }
+}
+updateLogoDisplay()
+
+logoPlaceholder.addEventListener('click',()=>{
+  logoUpload.click()
+})
+
+logoUpload.addEventListener('change',(e)=>{
+  const file=e.target.files[0]
+  if(!file) return
+  
+  if(!file.type.startsWith('image/')){
+    alert('Please select an image file')
+    return
+  }
+  
+  const reader=new FileReader()
+  reader.onload=(event)=>{
+    saveLogo(event.target.result)
+    updateLogoDisplay()
+  }
+  reader.readAsDataURL(file)
+})
+
+apNameEl.addEventListener('click',()=>{const newName=prompt('Edit name:',apInfo.name);if(newName&&newName.trim()!==''){apInfo.name=newName.trim();saveAPInfo(apInfo);updateAPDisplay()}})
+apTitleEl.addEventListener('click',()=>{const newTitle=prompt('Edit title:',apInfo.title);if(newTitle&&newTitle.trim()!==''){apInfo.title=newTitle.trim();saveAPInfo(apInfo);updateAPDisplay()}})
+
+function determineResolutionLevel(esc){
+if(esc.status==='resolved'&&esc.resolutionLevel){return esc.resolutionLevel}
+if(esc.status==='summer_class')return'AP'
+if(esc.apInterventions&&esc.apInterventions.length>0)return'AP'
+if(esc.chairInterventions&&esc.chairInterventions.length>0)return'Chairperson'
+if(esc.adviserInterventions&&esc.adviserInterventions.length>0)return'Adviser'
+return'Teacher'
+}
+
+function determineCurrentLevel(esc){
+if(esc.status==='summer_class'||esc.status==='escalated_to_ap'||esc.status==='under_ap_intervention')return'AP'
+if(esc.status==='escalated_to_chair'||esc.status==='under_chair_intervention')return'Chairperson'
+if(esc.status==='pending'||esc.status==='under_adviser_intervention')return'Adviser'
+return'Teacher'
+}
+
+function updateStats(){
+const escalations=loadEscalations()
+allCases=escalations
+const total=allCases.length
+const resolved=allCases.filter(c=>c.status==='resolved').length
+const summer=allCases.filter(c=>c.status==='summer_class').length
+const active=total-resolved-summer
+document.getElementById('totalCases').textContent=total
+document.getElementById('resolvedCases').textContent=resolved
+document.getElementById('activeCases').textContent=active
+document.getElementById('summerCases').textContent=summer
+const successRate=total>0?((resolved/total)*100).toFixed(1):0
+document.getElementById('successRate').textContent=successRate+'%'
+}
+
+function renderOverview(){
+const statusCounts={'Resolved':allCases.filter(c=>c.status==='resolved').length,'Active':allCases.filter(c=>c.status!=='resolved'&&c.status!=='summer_class').length,'Summer Class':allCases.filter(c=>c.status==='summer_class').length}
+const statusCtx=document.getElementById('statusChart')
+if(window.statusChartInstance)window.statusChartInstance.destroy()
+window.statusChartInstance=new Chart(statusCtx,{type:'pie',data:{labels:Object.keys(statusCounts),datasets:[{data:Object.values(statusCounts),backgroundColor:['#10b981','#f59e0b','#7c2d12']}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}}}})
+
+const gradeCounts={}
+allCases.forEach(c=>{const grade=c.sectionName.includes('Grade 11')?'Grade 11':c.sectionName.includes('Grade 12')?'Grade 12':'Other';gradeCounts[grade]=(gradeCounts[grade]||0)+1})
+const gradeCtx=document.getElementById('gradeChart')
+if(window.gradeChartInstance)window.gradeChartInstance.destroy()
+window.gradeChartInstance=new Chart(gradeCtx,{type:'bar',data:{labels:Object.keys(gradeCounts),datasets:[{label:'Cases',data:Object.values(gradeCounts),backgroundColor:['#3b82f6','#8b5cf6']}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}})
+
+const sectionCounts={}
+allCases.forEach(c=>{sectionCounts[c.sectionName]=(sectionCounts[c.sectionName]||0)+1})
+const topSections=Object.entries(sectionCounts).sort((a,b)=>b[1]-a[1]).slice(0,5)
+document.getElementById('topSections').innerHTML=topSections.map(([section,count])=>`<div class="department-card"><div class="department-name">${section}</div><div class="department-stats"><span>${count} cases</span></div></div>`).join('')
+}
+
+function renderResolution(){
+const teacherResolved=allCases.filter(c=>c.status==='resolved'&&determineResolutionLevel(c)==='Teacher').length
+const adviserResolved=allCases.filter(c=>c.status==='resolved'&&determineResolutionLevel(c)==='Adviser').length
+const chairResolved=allCases.filter(c=>c.status==='resolved'&&determineResolutionLevel(c)==='Chairperson').length
+const apResolved=allCases.filter(c=>(c.status==='resolved'||c.status==='summer_class')&&determineResolutionLevel(c)==='AP').length
+
+document.getElementById('teacherResolved').textContent=teacherResolved
+document.getElementById('adviserResolved').textContent=adviserResolved
+document.getElementById('chairResolved').textContent=chairResolved
+document.getElementById('apResolved').textContent=apResolved
+
+const resolutionCtx=document.getElementById('resolutionChart')
+if(window.resolutionChartInstance)window.resolutionChartInstance.destroy()
+window.resolutionChartInstance=new Chart(resolutionCtx,{type:'doughnut',data:{labels:['Teacher','Adviser','Chairperson','AP'],datasets:[{data:[teacherResolved,adviserResolved,chairResolved,apResolved],backgroundColor:['#3b82f6','#f59e0b','#8b5cf6','#dc2626']}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}}}})
+
+const currentCounts={'Teacher':0,'Adviser':0,'Chairperson':0,'AP':0}
+allCases.filter(c=>c.status!=='resolved'&&c.status!=='summer_class').forEach(c=>{const level=determineCurrentLevel(c);currentCounts[level]++})
+const currentCtx=document.getElementById('currentLevelChart')
+if(window.currentChartInstance)window.currentChartInstance.destroy()
+window.currentChartInstance=new Chart(currentCtx,{type:'bar',data:{labels:Object.keys(currentCounts),datasets:[{label:'Active Cases',data:Object.values(currentCounts),backgroundColor:['#3b82f6','#f59e0b','#8b5cf6','#dc2626']}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}})
+
+const levels=['Teacher','Adviser','Chairperson','AP']
+const tableHTML=levels.map(level=>{
+const reached=allCases.filter(c=>{const resLevel=determineResolutionLevel(c);const curLevel=determineCurrentLevel(c);return resLevel===level||curLevel===level}).length
+const active=allCases.filter(c=>c.status!=='resolved'&&c.status!=='summer_class'&&determineCurrentLevel(c)===level).length
+const resolved=allCases.filter(c=>c.status==='resolved'&&determineResolutionLevel(c)===level).length
+const successRate=reached>0?((resolved/reached)*100).toFixed(1):0
+return`<tr><td><strong>${level}</strong></td><td>${reached}</td><td>${active}</td><td>${resolved}</td><td style="color:${successRate>=50?'var(--success)':'var(--danger)'};font-weight:700">${successRate}%</td></tr>`
+}).join('')
+document.getElementById('levelPerformanceTable').innerHTML=tableHTML
+}
+
+function renderSections(){
+const gradeFilter=document.getElementById('gradeLevelFilter').value
+let filtered=allCases
+if(gradeFilter){filtered=allCases.filter(c=>c.sectionName.includes(`Grade ${gradeFilter}`))}
+const sectionData={}
+filtered.forEach(c=>{
+if(!sectionData[c.sectionName]){sectionData[c.sectionName]={total:0,resolved:0,active:0,summer:0}}
+sectionData[c.sectionName].total++
+if(c.status==='resolved')sectionData[c.sectionName].resolved++
+else if(c.status==='summer_class')sectionData[c.sectionName].summer++
+else sectionData[c.sectionName].active++
+})
+document.getElementById('sectionsList').innerHTML=Object.entries(sectionData).sort((a,b)=>b[1].total-a[1].total).map(([section,data])=>{
+const successRate=((data.resolved/data.total)*100).toFixed(1)
+return`<div class="department-card"><div class="department-name">${section}</div><div class="department-stats"><span>Total: ${data.total}</span><span>Resolved: ${data.resolved}</span><span>Active: ${data.active}</span><span>Summer: ${data.summer}</span><span style="color:${successRate>=50?'var(--success)':'var(--danger)'};font-weight:700">Success: ${successRate}%</span></div></div>`
+}).join('')
+}
+
+function renderSubjects(){
+const subjectData={}
+allCases.forEach(c=>{
+if(!subjectData[c.subject]){subjectData[c.subject]={total:0,resolved:0,active:0,summer:0}}
+subjectData[c.subject].total++
+if(c.status==='resolved')subjectData[c.subject].resolved++
+else if(c.status==='summer_class')subjectData[c.subject].summer++
+else subjectData[c.subject].active++
+})
+document.getElementById('subjectsTableBody').innerHTML=Object.entries(subjectData).sort((a,b)=>b[1].total-a[1].total).map(([subject,data])=>{
+const successRate=((data.resolved/data.total)*100).toFixed(1)
+return`<tr><td>${subject}</td><td>${data.total}</td><td><span class="badge resolved">${data.resolved}</span></td><td><span class="badge active">${data.active}</span></td><td><span class="badge summer_class">${data.summer}</span></td><td style="color:${successRate>=50?'var(--success)':'var(--danger)'};font-weight:700">${successRate}%</td></tr>`
+}).join('')
+}
+
+function renderCases(){
+const statusFilter=document.getElementById('caseStatusFilter').value
+const levelFilter=document.getElementById('caseLevelFilter').value
+const sectionFilter=document.getElementById('caseSectionFilter').value
+let filtered=allCases
+if(statusFilter!=='all'){
+if(statusFilter==='active')filtered=filtered.filter(c=>c.status!=='resolved'&&c.status!=='summer_class')
+else filtered=filtered.filter(c=>c.status===statusFilter)
+}
+if(levelFilter!=='all'){
+filtered=filtered.filter(c=>{
+const level=c.status==='resolved'?determineResolutionLevel(c):determineCurrentLevel(c)
+return level===levelFilter
+})
+}
+if(sectionFilter)filtered=filtered.filter(c=>c.sectionName===sectionFilter)
+
+if(filtered.length===0){
+document.getElementById('casesList').innerHTML=`<div style="text-align:center;padding:40px;color:var(--muted)"><p>No cases found.</p></div>`
+return
+}
+
+document.getElementById('casesList').innerHTML=filtered.map(esc=>{
+const statusLabel=esc.status==='escalated_to_ap'?'Pending AP Action':esc.status==='under_ap_intervention'?'Under AP Intervention':esc.status==='summer_class'?'Summer Class Required':esc.status==='resolved'?'Resolved':'Active'
+const cardClass=esc.status==='resolved'?'resolved':esc.status==='summer_class'?'summer_class':''
+const currentLevel=esc.status==='resolved'?determineResolutionLevel(esc):determineCurrentLevel(esc)
+return`
+<div class="case-card ${cardClass}">
+<div class="case-header">
+<div>
+<div class="student-name">${esc.studentName}</div>
+<div class="case-meta">
+<span><strong>Subject:</strong> ${esc.subject}</span>
+<span><strong>Section:</strong> ${esc.sectionName}</span>
+<span><strong>Teacher:</strong> ${esc.teacherName}</span>
+<span><strong>Current/Resolution Level:</strong> ${currentLevel}</span>
+</div>
+</div>
+<span class="badge ${esc.status}">${statusLabel}</span>
+</div>
+<div class="timeline">
+<strong style="display:block;margin-bottom:8px;font-size:13px">Intervention History:</strong>
+<div class="timeline-entry"><div class="timeline-header">📝 Teacher</div><div class="timeline-content">${esc.teacherIntervention}</div></div>
+${esc.adviserInterventions&&esc.adviserInterventions.length>0?esc.adviserInterventions.map(int=>`<div class="timeline-entry"><div class="timeline-header">👤 Adviser: ${int.type}</div><div class="timeline-content">${int.notes}</div></div>`).join(''):''}
+${esc.chairInterventions&&esc.chairInterventions.length>0?esc.chairInterventions.map(int=>`<div class="timeline-entry"><div class="timeline-header">🏛️ Chairperson: ${int.type}</div><div class="timeline-content">${int.notes}</div></div>`).join(''):''}
+${esc.apInterventions&&esc.apInterventions.length>0?esc.apInterventions.map(int=>`<div class="timeline-entry"><div class="timeline-header">🎓 AP: ${int.type}</div><div class="timeline-content">${int.notes}</div><div class="timeline-meta">${new Date(int.date).toLocaleDateString()} by ${int.by}</div></div>`).join(''):''}
+</div>
+${esc.status==='resolved'?`
+<div class="intervention-section" style="background:#f0fdf4;border:1px solid #bbf7d0">
+<strong style="color:var(--success)">✓ Case Resolved at ${esc.resolutionLevel||currentLevel} Level</strong>
+${esc.resolutionNotes||'Student performance improved'}
+<div class="timeline-meta" style="margin-top:6px">${new Date(esc.resolvedDate).toLocaleDateString()}${esc.resolvedBy?' by '+esc.resolvedBy:''}</div>
+</div>
+`:esc.status==='summer_class'?`
+<div class="intervention-section" style="background:#fff7ed;border:1px solid #fed7aa">
+<strong style="color:#7c2d12">⚠️ Below Standard - Summer Class Required</strong>
+${esc.summerClassNotes||'Student did not meet minimum standards'}
+<div class="timeline-meta" style="margin-top:6px">Tagged on ${new Date(esc.summerClassDate).toLocaleDateString()} by ${esc.summerClassBy}</div>
+</div>
+`:esc.apEscalation?`
+<div class="action-buttons">
+<button class="secondary" onclick="logAPIntervention('${esc.id}','admin_support')">Administrative Support</button>
+<button class="secondary" onclick="logAPIntervention('${esc.id}','disciplinary_conference')">Disciplinary Conference</button>
+<button class="secondary" onclick="logAPIntervention('${esc.id}','academic_program')">Special Academic Program</button>
+<button class="secondary" onclick="logAPIntervention('${esc.id}','retention_review')">Retention Committee Review</button>
+<button class="secondary" onclick="logAPIntervention('${esc.id}','custom')">Custom Intervention</button>
+<button class="success" onclick="markAsResolved('${esc.id}','AP')">✓ Mark as Resolved</button>
+<button class="warning" onclick="tagForSummerClass('${esc.id}')">⚠️ Tag for Summer Class</button>
+</div>
+`:''}
+</div>
+`
+}).join('')
+}
+
+function renderSummer(){
+const summerCases=allCases.filter(c=>c.status==='summer_class')
+if(summerCases.length===0){
+document.getElementById('summerTableBody').innerHTML=`<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--muted)">No students tagged for summer class</td></tr>`
+return
+}
+document.getElementById('summerTableBody').innerHTML=summerCases.map(esc=>`
+<tr>
+<td><strong>${esc.studentName}</strong></td>
+<td>${esc.subject}</td>
+<td>${esc.sectionName}</td>
+<td>${esc.teacherName}</td>
+<td>${new Date(esc.summerClassDate).toLocaleDateString()}</td>
+<td><button class="secondary small" onclick="viewCaseDetails('${esc.id}')">View Details</button></td>
+</tr>
+`).join('')
+}
+
+window.logAPIntervention=function(escalationId,type){
+const escalations=loadEscalations()
+const esc=escalations.find(e=>e.id===escalationId)
+if(!esc)return
+const typeLabels={'admin_support':'Administrative Support','disciplinary_conference':'Disciplinary Conference','academic_program':'Special Academic Program','retention_review':'Retention Committee Review','custom':'Custom Intervention'}
+const typeLabel=typeLabels[type]
+openModal(`<h3>${typeLabel}</h3><div style="margin-top:12px"><label for="apNote">Intervention Details:</label><textarea id="apNote" placeholder="Document the administrative intervention..."></textarea></div><div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px"><button id="saveNote">Log Intervention</button><button id="cancelModal" class="secondary">Cancel</button></div>`)
+document.getElementById('cancelModal').addEventListener('click',closeModal)
+document.getElementById('saveNote').addEventListener('click',()=>{
+const note=document.getElementById('apNote').value.trim()
+if(!note){alert('Please enter intervention details');return}
+if(!esc.apInterventions)esc.apInterventions=[]
+esc.apInterventions.push({type:typeLabel,notes:note,date:new Date().toISOString(),by:apInfo.name})
+if(esc.status==='escalated_to_ap'){esc.status='under_ap_intervention'}
+saveEscalations(escalations)
+updateStats()
+renderCases()
+closeModal()
+alert(`AP Intervention logged!\n\nStudent: ${esc.studentName}\nAction: ${typeLabel}`)
+})
+}
+
+window.markAsResolved=function(escalationId,level){
+const escalations=loadEscalations()
+const esc=escalations.find(e=>e.id===escalationId)
+if(!esc)return
+openModal(`
+<h3 style="color:var(--success)">✓ Mark Case as Resolved</h3>
+<p><strong>Student:</strong> ${esc.studentName}</p>
+<p><strong>Subject:</strong> ${esc.subject}</p>
+<p style="margin-top:12px">This will mark the case as successfully resolved at the <strong>${level}</strong> level.</p>
+<div style="margin-top:12px">
+<label for="resolutionNotes">Resolution Notes:</label>
+<textarea id="resolutionNotes" placeholder="Document how the issue was resolved...">Student ${esc.studentName} has shown significant improvement in ${esc.subject}. Performance is now meeting minimum standards.</textarea>
+</div>
+<div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px">
+<button id="confirmResolve" class="success">✓ Confirm Resolved</button>
+<button id="cancelModal" class="secondary">Cancel</button>
+</div>
+`)
+document.getElementById('cancelModal').addEventListener('click',closeModal)
+document.getElementById('confirmResolve').addEventListener('click',()=>{
+const notes=document.getElementById('resolutionNotes').value.trim()
+if(!notes){alert('Please provide resolution notes');return}
+esc.status='resolved'
+esc.resolvedDate=new Date().toISOString()
+esc.resolvedBy=apInfo.name
+esc.resolutionLevel=level
+esc.resolutionNotes=notes
+saveEscalations(escalations)
+updateStats()
+renderCases()
+closeModal()
+alert(`✓ Case marked as resolved!\n\nStudent: ${esc.studentName}\nResolution Level: ${level}`)
+})
+}
+
+window.tagForSummerClass=function(escalationId){
+const escalations=loadEscalations()
+const esc=escalations.find(e=>e.id===escalationId)
+if(!esc)return
+openModal(`
+<h3 style="color:#7c2d12">⚠️ Tag Student for Summer Class</h3>
+<p><strong>Student:</strong> ${esc.studentName}</p>
+<p><strong>Subject:</strong> ${esc.subject}</p>
+<p style="color:var(--danger);margin-top:12px">This action indicates that despite all intervention attempts, the student has not met minimum standards and will receive a grade of Below Standard, requiring summer class enrollment.</p>
+<div style="margin-top:12px">
+<label for="summerNotes">Final Assessment Notes:</label>
+<textarea id="summerNotes" placeholder="Document why summer class is required...">Student ${esc.studentName} did not meet minimum academic standards in ${esc.subject} despite comprehensive intervention efforts. Final grade: Below Standard. Action required: Summer class enrollment for credit recovery</textarea>
+</div>
+<div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px">
+<button id="confirmSummer" class="warning">Tag for Summer Class</button>
+<button id="cancelModal" class="secondary">Cancel</button>
+</div>
+`)
+document.getElementById('cancelModal').addEventListener('click',closeModal)
+document.getElementById('confirmSummer').addEventListener('click',()=>{
+const notes=document.getElementById('summerNotes').value.trim()
+if(!notes){alert('Please provide assessment notes');return}
+esc.status='summer_class'
+esc.summerClassDate=new Date().toISOString()
+esc.summerClassBy=apInfo.name
+esc.summerClassNotes=notes
+esc.resolutionLevel='AP'
+saveEscalations(escalations)
+updateStats()
+renderCases()
+closeModal()
+alert(`Student tagged for summer class.\n\nStudent: ${esc.studentName}\nSubject: ${esc.subject}`)
+})
+}
+
+window.viewCaseDetails=function(escalationId){
+const esc=allCases.find(e=>e.id===escalationId)
+if(!esc)return
+openModal(`
+<h3>${esc.studentName} - Case Details</h3>
+<div style="margin-top:12px">
+<p><strong>Subject:</strong> ${esc.subject}</p>
+<p><strong>Section:</strong> ${esc.sectionName}</p>
+<p><strong>Teacher:</strong> ${esc.teacherName}</p>
+<p><strong>Status:</strong> <span class="badge summer_class">Summer Class Required</span></p>
+</div>
+<div class="intervention-section" style="margin-top:12px">
+<strong>Intervention Summary:</strong>
+<ul style="margin:8px 0">
+<li>Teacher interventions: 1+</li>
+<li>Adviser interventions: ${esc.adviserInterventions?esc.adviserInterventions.length:0}</li>
+<li>Chairperson interventions: ${esc.chairInterventions?esc.chairInterventions.length:0}</li>
+<li>AP interventions: ${esc.apInterventions?esc.apInterventions.length:0}</li>
+</ul>
+</div>
+<div class="intervention-section" style="margin-top:12px;background:#fff7ed">
+<strong style="color:#7c2d12">Final Assessment:</strong>
+<p style="margin-top:6px">${esc.summerClassNotes}</p>
+<div class="timeline-meta" style="margin-top:6px">Tagged on ${new Date(esc.summerClassDate).toLocaleDateString()} by ${esc.summerClassBy}</div>
+</div>
+<div style="display:flex;justify-content:flex-end;margin-top:12px">
+<button id="closeModal" class="secondary">Close</button>
+</div>
+`)
+document.getElementById('closeModal').addEventListener('click',closeModal)
+}
+
+window.switchTab=function(tab){
+currentTab=tab
+document.getElementById('tabOverview').classList.toggle('active',tab==='overview')
+document.getElementById('tabResolution').classList.toggle('active',tab==='resolution')
+document.getElementById('tabSections').classList.toggle('active',tab==='sections')
+document.getElementById('tabSubjects').classList.toggle('active',tab==='subjects')
+document.getElementById('tabCases').classList.toggle('active',tab==='cases')
+document.getElementById('tabSummer').classList.toggle('active',tab==='summer')
+document.getElementById('overviewView').style.display=tab==='overview'?'block':'none'
+document.getElementById('resolutionView').style.display=tab==='resolution'?'block':'none'
+document.getElementById('sectionsView').style.display=tab==='sections'?'block':'none'
+document.getElementById('subjectsView').style.display=tab==='subjects'?'block':'none'
+document.getElementById('casesView').style.display=tab==='cases'?'block':'none'
+document.getElementById('summerView').style.display=tab==='summer'?'block':'none'
+if(tab==='overview')renderOverview()
+if(tab==='resolution')renderResolution()
+if(tab==='sections')renderSections()
+if(tab==='subjects')renderSubjects()
+if(tab==='cases'){
+const sections=[...new Set(allCases.map(c=>c.sectionName))].sort()
+document.getElementById('caseSectionFilter').innerHTML='<option value="">All Sections</option>'+sections.map(s=>`<option value="${s}">${s}</option>`).join('')
+renderCases()
+}
+if(tab==='summer')renderSummer()
+}
+
+function openModal(html){modalBox.innerHTML=html;modal.style.display='flex'}
+function closeModal(){modal.style.display='none';modalBox.innerHTML=''}
+modal.addEventListener('click',(e)=>{if(e.target===modal)closeModal()})
+
+document.getElementById('gradeLevelFilter').addEventListener('change',renderSections)
+document.getElementById('caseStatusFilter').addEventListener('change',renderCases)
+document.getElementById('caseLevelFilter').addEventListener('change',renderCases)
+document.getElementById('caseSectionFilter').addEventListener('change',renderCases)
+document.getElementById('refreshBtn').addEventListener('click',()=>{updateStats();switchTab(currentTab);alert('Data refreshed!')})
+
+updateStats()
+renderOverview()
+</script>
+</body>
+</html>

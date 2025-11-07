@@ -1,0 +1,529 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>ADDU SHS COMPASS - Chairperson Dashboard</title>
+<style>
+  :root{
+    --bg:#f4f7fb; --card:#fff; --muted:#6b7280; --accent:#2F3590; --accent-dark:#1f2560;
+    --danger:#ef4444; --warning:#f59e0b; --success:#10b981; --border:#e6eef0; --radius:10px; --gold:#FFD700;
+  }
+  *{box-sizing:border-box}
+  body{font-family:Inter,system-ui,Segoe UI,Roboto,Arial;background:var(--bg);margin:0;color:#0f172a}
+  header{background:linear-gradient(135deg,#2F3590,#4a51b8);padding:24px 32px;color:#fff;display:flex;align-items:center;justify-content:space-between;border-bottom:4px solid #FFD700;box-shadow:0 4px 12px rgba(47,53,144,0.15)}
+  .logo-placeholder {
+    width: 70px;
+    height: 70px;
+    background-color: #fff;
+    border: 2px solid #FFD700;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    text-align: center;
+    color: #2F3590;
+    padding: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .logo-placeholder:hover {
+    box-shadow: 0 0 12px rgba(255, 215, 0, 0.6);
+    border-color: #FFC700;
+  }
+  .logo-placeholder img {
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: 6px;
+  }
+  .chair-info {
+    text-align: right;
+  }
+  .chair-info .chair-name {
+    font-size: 17px;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: 0.3px;
+  }
+  .chair-info .strand-name {
+    font-size: 14px;
+    opacity: 0.9;
+    margin: 2px 0 0 0;
+  }
+  .header-center {
+    flex: 1;
+    text-align: center;
+  }
+  .header-center h1 {
+    font-size: 26px;
+    margin: 0 0 6px 0;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+  }
+  .header-center .subtitle {
+    font-size: 12px;
+    opacity: 0.9;
+    margin: 3px 0;
+    font-weight: 400;
+  }
+  .header-center .school-name {
+    font-size: 12px;
+    opacity: 0.85;
+    margin: 2px 0 0 0;
+    font-style: italic;
+  }
+  main{max-width:1400px;margin:20px auto;padding:18px}
+  .card{background:var(--card);padding:16px;border-radius:var(--radius);box-shadow:0 8px 20px rgba(2,6,23,0.06);border:1px solid var(--border);margin-bottom:16px}
+  select,input,button,textarea{font:inherit}
+  input, select, textarea {width:100%; padding: 6px 8px; border-radius: 6px; border: 1px solid #dbe7e6;}
+  textarea {min-height: 120px; resize: vertical; font-family: monospace;}
+  button{background:var(--accent);color:#fff;border:none;padding:8px 12px;border-radius:8px;cursor:pointer;width:auto;}
+  button.secondary{background:#e6eef0;color:#2F3590;font-weight:600}
+  button.danger{background:var(--danger);color:#fff}
+  button.success{background:var(--success);color:#fff}
+  .small{font-size:13px;color:var(--muted)}
+  .muted{color:var(--muted)}
+  .stat{display:flex;gap:12px;margin-top:8px;flex-wrap:wrap}
+  .stat .s{background:#fff;padding:12px 16px;border-radius:8px;border:1px solid var(--border);min-width:140px;text-align:center}
+  .stat .s.danger{border-color:var(--danger);background:#fff5f5}
+  .stat .s.warning{border-color:var(--warning);background:#fffbeb}
+  .stat .s.success{border-color:var(--success);background:#f0fdf4}
+  .modal{position:fixed;inset:0;background:rgba(2,6,23,0.45);display:none;align-items:center;justify-content:center;padding:16px;z-index:1000}
+  .modal .box{width:700px;background:#fff;padding:18px;border-radius:10px;max-height:90vh;overflow:auto}
+  label{font-size:13px;color:#243b4a;display:block;margin-bottom:4px;}
+  .case-card {background: white;border-radius: 8px;padding: 16px;margin-bottom: 12px;border-left: 4px solid var(--danger);box-shadow: 0 2px 4px rgba(0,0,0,0.05);}
+  .case-card.resolved {border-left-color: var(--success);background: #f0fdf4;}
+  .case-header {display: flex;justify-content: space-between;align-items: start;margin-bottom: 12px;}
+  .student-name {font-size: 16px;font-weight: 700;color: #0f172a;}
+  .status-badge {display: inline-block;padding: 4px 10px;border-radius: 12px;font-size: 11px;font-weight: 700;text-transform: uppercase;}
+  .status-badge.escalated_to_chair {background: #fee2e2;color: #991b1b;}
+  .status-badge.under_chair_intervention {background: #fef3c7;color: #92400e;}
+  .status-badge.escalated_to_ap {background: #dc2626;color: #fff;}
+  .status-badge.resolved {background: #d1fae5;color: #065f46;}
+  .case-meta {font-size: 12px;color: var(--muted);margin-bottom: 12px;}
+  .case-meta span {margin-right: 16px;}
+  .intervention-section {background: #f9fafb;padding: 12px;border-radius: 6px;margin-top: 12px;font-size: 13px;}
+  .intervention-section strong {display: block;margin-bottom: 6px;color: #374151;}
+  .action-buttons {display: flex;gap: 8px;margin-top: 12px;flex-wrap:wrap;}
+  .action-buttons button {padding: 6px 12px;font-size: 13px;}
+  .timeline {margin-top: 12px;padding-left: 12px;border-left: 2px solid #e5e7eb;}
+  .timeline-entry {margin-bottom: 10px;padding-bottom: 10px;border-bottom: 1px solid #f3f4f6;font-size: 12px;}
+  .timeline-entry:last-child {border-bottom: none;}
+  .timeline-header {font-weight: 600;color: #374151;margin-bottom: 4px;}
+  .timeline-content {color: #6b7280;}
+  .timeline-meta {color: #9ca3af;font-size: 11px;margin-top: 4px;}
+  .filter-section {display: flex;gap: 12px;align-items: center;margin-bottom: 16px;flex-wrap: wrap;}
+  .editable-header {cursor: pointer;padding: 2px 4px;border-radius: 4px;transition: background 0.2s;}
+  .editable-header:hover {background-color: rgba(255,255,255,0.2);}
+  .tabs {display: flex;gap: 8px;margin-bottom: 16px;border-bottom: 2px solid var(--border);}
+  .tab {padding: 10px 16px;background: none;border: none;border-radius: 0;cursor: pointer;font-weight: 500;color: var(--muted);border-bottom: 3px solid transparent;margin-bottom: -2px;}
+  .tab.active {color: var(--accent);border-bottom-color: #FFD700;}
+  .student-card {background: white;border-radius: 8px;padding: 16px;margin-bottom: 12px;border: 1px solid var(--border);border-left: 4px solid var(--accent);}
+  .student-header {font-size: 18px;font-weight: 700;color: #0f172a;margin-bottom: 12px;display: flex;justify-content: space-between;align-items: center;}
+  .student-meta {font-size: 13px;color: var(--muted);margin-bottom: 12px;}
+  .intervention-item {background: #f9fafb;padding: 12px;border-radius: 6px;margin-bottom: 8px;border-left: 3px solid #e5e7eb;}
+  .intervention-item:last-child {margin-bottom: 0;}
+  .intervention-label {font-weight: 600;font-size: 12px;color: #374151;margin-bottom: 4px;}
+  .intervention-content {font-size: 13px;color: #6b7280;}
+  .score-display {background: #f9fafb;padding: 8px 12px;border-radius: 6px;margin-top: 8px;font-size: 12px;}
+  .score-item {display: inline-block;margin-right: 12px;padding: 4px 8px;border-radius: 4px;background: white;}
+  .score-item.failing {background: #fff5f5;color: var(--danger);font-weight: 600;}
+  .score-item.passing {background: #f0fdf4;color: var(--success);}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo-placeholder" id="logoPlaceholder" title="Click to upload AdDU logo">
+    <span id="logoText">LOGO</span>
+    <img id="logoImg" style="display:none;" alt="School Logo">
+  </div>
+  <input type="file" id="logoUpload" accept="image/*" style="display:none;">
+  
+  <div class="header-center">
+    <h1>COMPASS</h1>
+    <div class="subtitle">Comprehensive Monitoring & Progress Assessment Support System</div>
+    <div class="school-name">Ateneo de Davao University - Senior High School</div>
+  </div>
+  
+  <div class="chair-info">
+    <div class="chair-name editable-header" id="chairName" title="Click to edit">Chairperson Name</div>
+    <div class="strand-name editable-header" id="strandName" title="Click to edit">Strand</div>
+  </div>
+</header>
+
+<main>
+  <div class="tabs">
+    <button class="tab active" id="tabEscalated" onclick="switchTab('escalated')">Escalated Cases</button>
+    <button class="tab" id="tabFeedback" onclick="switchTab('feedback')">Intervention Feedback</button>
+  </div>
+
+  <div id="escalatedView">
+    <section class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <h2 style="margin:0;font-size:20px">Cases Escalated to Chairperson</h2>
+        <button id="refreshBtn" class="secondary">🔄 Refresh Data</button>
+      </div>
+      
+      <div class="filter-section">
+        <label class="small">View by Subject:</label>
+        <select id="subjectFilter" style="width:auto;min-width:200px">
+          <option value="">-- All Subjects --</option>
+        </select>
+        <div style="margin-left:auto;display:flex;gap:12px;align-items:center">
+          <label class="small">Status:</label>
+          <select id="statusFilter" style="width:auto">
+            <option value="all">All Cases</option>
+            <option value="escalated_to_chair">Pending Chair Action</option>
+            <option value="under_chair_intervention">Under Intervention</option>
+            <option value="escalated_to_ap">Escalated to AP</option>
+            <option value="resolved">Resolved</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="stat" id="summaryStats">
+        <div class="s"><div class="small muted">Total Cases</div><div style="font-weight:700;font-size:24px" id="totalCases">0</div></div>
+        <div class="s danger"><div class="small muted">Pending Action</div><div style="font-weight:700;font-size:24px;color:var(--danger)" id="pendingCases">0</div></div>
+        <div class="s warning"><div class="small muted">Under Intervention</div><div style="font-weight:700;font-size:24px;color:var(--warning)" id="activeCases">0</div></div>
+        <div class="s success"><div class="small muted">Resolved</div><div style="font-weight:700;font-size:24px;color:var(--success)" id="resolvedCases">0</div></div>
+      </div>
+    </section>
+
+    <section class="card" id="casesSection"><div id="casesList"></div></section>
+  </div>
+
+  <div id="feedbackView" style="display:none">
+    <section class="card">
+      <h2 style="margin:0 0 16px 0;font-size:20px">Intervention Feedback - Organized by Student</h2>
+      <div class="filter-section">
+        <label class="small">Select Section:</label>
+        <select id="sectionFilterFeedback" style="width:auto;min-width:200px"><option value="">-- All Sections --</option></select>
+      </div>
+      <div id="feedbackContent"></div>
+    </section>
+  </div>
+</main>
+
+<div id="modal" class="modal"><div class="box" id="modalBox"></div></div>
+
+<script>
+const ESCALATIONS_KEY = 'compass_escalations'
+const CHAIR_KEY = 'compass_chair_info'
+const LOGO_KEY = 'compass_logo'
+
+function loadChairInfo(){
+  try{const raw = localStorage.getItem(CHAIR_KEY);if(!raw) return {name: 'Chairperson Name', strand: 'Strand'};return JSON.parse(raw)} catch(e){return {name: 'Chairperson Name', strand: 'Strand'}}
+}
+function saveChairInfo(info){ localStorage.setItem(CHAIR_KEY, JSON.stringify(info)) }
+
+function loadLogo(){
+  try{
+    return localStorage.getItem(LOGO_KEY)
+  } catch(e){
+    return null
+  }
+}
+function saveLogo(dataUrl){ 
+  try {
+    localStorage.setItem(LOGO_KEY, dataUrl)
+  } catch(e) {
+    alert('Logo file too large for storage. Please use a smaller image.')
+  }
+}
+
+function loadEscalations(){try{const raw = localStorage.getItem(ESCALATIONS_KEY);if(!raw) return [];return JSON.parse(raw)} catch(e){return []}}
+function saveEscalations(escalations){localStorage.setItem(ESCALATIONS_KEY, JSON.stringify(escalations))}
+
+let chairInfo = loadChairInfo()
+let currentSubject = ''
+let currentStatusFilter = 'all'
+let currentTab = 'escalated'
+
+const chairNameEl = document.getElementById('chairName')
+const strandNameEl = document.getElementById('strandName')
+const logoPlaceholder = document.getElementById('logoPlaceholder')
+const logoUpload = document.getElementById('logoUpload')
+const logoImg = document.getElementById('logoImg')
+const logoText = document.getElementById('logoText')
+const totalCasesEl = document.getElementById('totalCases')
+const pendingCasesEl = document.getElementById('pendingCases')
+const activeCasesEl = document.getElementById('activeCases')
+const resolvedCasesEl = document.getElementById('resolvedCases')
+const subjectFilter = document.getElementById('subjectFilter')
+const statusFilter = document.getElementById('statusFilter')
+const refreshBtn = document.getElementById('refreshBtn')
+const casesList = document.getElementById('casesList')
+const modal = document.getElementById('modal')
+const modalBox = document.getElementById('modalBox')
+
+function updateChairDisplay(){chairNameEl.textContent = chairInfo.name;strandNameEl.textContent = chairInfo.strand}
+updateChairDisplay()
+
+function updateLogoDisplay(){
+  const logoData = loadLogo()
+  if(logoData){
+    logoImg.src = logoData
+    logoImg.style.display = 'block'
+    logoText.style.display = 'none'
+  } else {
+    logoImg.style.display = 'none'
+    logoText.style.display = 'block'
+  }
+}
+updateLogoDisplay()
+
+logoPlaceholder.addEventListener('click', ()=>{
+  logoUpload.click()
+})
+
+logoUpload.addEventListener('change', (e)=>{
+  const file = e.target.files[0]
+  if(!file) return
+  
+  if(!file.type.startsWith('image/')){
+    alert('Please select an image file')
+    return
+  }
+  
+  const reader = new FileReader()
+  reader.onload = (event)=>{
+    saveLogo(event.target.result)
+    updateLogoDisplay()
+  }
+  reader.readAsDataURL(file)
+})
+
+chairNameEl.addEventListener('click', ()=>{const newName = prompt('Edit chairperson name:', chairInfo.name);if(newName && newName.trim() !== ''){chairInfo.name = newName.trim();saveChairInfo(chairInfo);updateChairDisplay()}})
+strandNameEl.addEventListener('click', ()=>{const newStrand = prompt('Edit strand:', chairInfo.strand);if(newStrand && newStrand.trim() !== ''){chairInfo.strand = newStrand.trim();saveChairInfo(chairInfo);updateChairDisplay()}})
+
+function populateSubjectFilter(){
+  const escalations = loadEscalations()
+  const chairCases = escalations.filter(e => e.status === 'escalated_to_chair' || e.status === 'under_chair_intervention' || e.status === 'escalated_to_ap' || (e.status === 'resolved' && e.chairEscalation))
+  const subjects = [...new Set(chairCases.map(e => e.subject))].sort()
+  subjectFilter.innerHTML = '<option value="">-- All Subjects --</option>'
+  subjects.forEach(subject => {const option = document.createElement('option');option.value = subject;option.textContent = subject;subjectFilter.appendChild(option)})
+}
+
+function populateSectionFilter(){
+  const escalations = loadEscalations()
+  const sections = [...new Set(escalations.map(e => e.sectionName))].sort()
+  const sectionFilterFeedback = document.getElementById('sectionFilterFeedback')
+  sectionFilterFeedback.innerHTML = '<option value="">-- All Sections --</option>'
+  sections.forEach(section => {const option = document.createElement('option');option.value = section;option.textContent = section;sectionFilterFeedback.appendChild(option)})
+}
+
+function updateStats(){
+  const escalations = loadEscalations()
+  const chairCases = escalations.filter(e => e.chairEscalation)
+  const pending = chairCases.filter(e => e.status === 'escalated_to_chair').length
+  const active = chairCases.filter(e => e.status === 'under_chair_intervention').length
+  const resolved = chairCases.filter(e => e.status === 'resolved' && e.chairEscalation).length
+  totalCasesEl.textContent = chairCases.length
+  pendingCasesEl.textContent = pending
+  activeCasesEl.textContent = active
+  resolvedCasesEl.textContent = resolved
+}
+
+function renderCases(){
+  const allEscalations = loadEscalations()
+  let escalations = allEscalations.filter(e => e.chairEscalation)
+  if (currentSubject) {escalations = escalations.filter(e => e.subject === currentSubject)}
+  if (currentStatusFilter !== 'all') {escalations = escalations.filter(e => e.status === currentStatusFilter)}
+  updateStats()
+  if(escalations.length === 0){casesList.innerHTML = `<div style="text-align:center;padding:40px;color:var(--muted)"><p>No ${currentStatusFilter === 'all' ? '' : currentStatusFilter.replace('_', ' ')} cases found.</p></div>`;return}
+  let html = ''
+  escalations.forEach(esc => {html += renderCaseCard(esc)})
+  casesList.innerHTML = html
+}
+
+function renderCaseCard(esc) {
+  const statusLabel = esc.status === 'escalated_to_chair' ? 'Pending Chair Action' :
+                      esc.status === 'under_chair_intervention' ? 'Under Chair Intervention' :
+                      esc.status === 'escalated_to_ap' ? 'Escalated to AP' :
+                      'Resolved'
+  const cardClass = esc.status === 'resolved' ? 'resolved' : ''
+  let scoresHTML = ''
+  if (esc.scores && Object.keys(esc.scores).length > 0) {
+    scoresHTML = '<div class="score-display"><strong>Current Scores:</strong> '
+    for (const [col, score] of Object.entries(esc.scores)) {
+      if (col !== 'intervention' && col !== 'escalated') {
+        const isFailing = parseFloat(score) < 60
+        scoresHTML += `<span class="score-item ${isFailing ? 'failing' : 'passing'}">${col}: ${score}%</span>`
+      }
+    }
+    scoresHTML += '</div>'
+  }
+  
+  return `
+    <div class="case-card ${cardClass}">
+      <div class="case-header">
+        <div>
+          <div class="student-name">${esc.studentName}</div>
+          <div class="case-meta">
+            <span><strong>Subject:</strong> ${esc.subject}</span>
+            <span><strong>Section:</strong> ${esc.sectionName}</span>
+            <span><strong>Teacher:</strong> ${esc.teacherName}</span>
+          </div>
+          <div class="case-meta"><span><strong>Escalated by Adviser:</strong> ${new Date(esc.chairEscalation.date).toLocaleDateString()}</span></div>
+        </div>
+        <span class="status-badge ${esc.status}">${statusLabel}</span>
+      </div>
+      ${scoresHTML}
+      <div class="intervention-section" style="background:#fff5f5;border:1px solid #fecaca">
+        <strong style="color:var(--danger)">Adviser's Escalation Summary:</strong>
+        ${esc.chairEscalation.summary}
+        <div class="timeline-meta" style="margin-top:6px">By ${esc.chairEscalation.by}</div>
+      </div>
+      <div class="timeline">
+        <strong style="display:block;margin-bottom:8px;font-size:13px">Case History:</strong>
+        <div class="timeline-entry">
+          <div class="timeline-header">📝 Teacher's Initial Intervention</div>
+          <div class="timeline-content">${esc.teacherIntervention}</div>
+          <div class="timeline-meta">${new Date(esc.escalatedDate).toLocaleDateString()} by ${esc.teacherName}</div>
+        </div>
+        ${esc.adviserInterventions && esc.adviserInterventions.length > 0 ? esc.adviserInterventions.map(int => `
+          <div class="timeline-entry">
+            <div class="timeline-header">👤 Adviser: ${int.type}</div>
+            <div class="timeline-content">${int.notes}</div>
+            <div class="timeline-meta">${new Date(int.date).toLocaleDateString()} by ${int.by}</div>
+          </div>
+        `).join('') : ''}
+        ${esc.chairInterventions && esc.chairInterventions.length > 0 ? esc.chairInterventions.map(int => `
+          <div class="timeline-entry">
+            <div class="timeline-header">🏛️ Chairperson: ${int.type}</div>
+            <div class="timeline-content">${int.notes}</div>
+            <div class="timeline-meta">${new Date(int.date).toLocaleDateString()} by ${int.by}</div>
+          </div>
+        `).join('') : ''}
+        ${esc.apEscalation ? `
+          <div class="timeline-entry">
+            <div class="timeline-header" style="color:#dc2626">⬆️ Escalated to Assistant Principal</div>
+            <div class="timeline-content">${esc.apEscalation.summary}</div>
+            <div class="timeline-meta">${new Date(esc.apEscalation.date).toLocaleDateString()} by ${esc.apEscalation.by}</div>
+          </div>
+        ` : ''}
+      </div>
+      ${esc.status === 'resolved' ? `
+        <div class="intervention-section" style="background:#f0fdf4;border:1px solid #bbf7d0">
+          <strong style="color:var(--success)">✓ Case Resolved</strong>
+          ${esc.resolutionNotes || 'Student performance improved'}
+          <div class="timeline-meta" style="margin-top:6px">${new Date(esc.resolvedDate).toLocaleDateString()} by ${esc.resolvedBy || 'System'}</div>
+        </div>
+      ` : `
+        <div class="action-buttons">
+          ${esc.status === 'escalated_to_chair' || esc.status === 'under_chair_intervention' ? `
+            <button class="secondary" onclick="logChairIntervention('${esc.id}', 'parents_conference')">Parents Conference</button>
+            <button class="secondary" onclick="logChairIntervention('${esc.id}', 'counseling_session')">Counseling Session</button>
+            <button class="secondary" onclick="logChairIntervention('${esc.id}', 'academic_support')">Academic Support Plan</button>
+            <button class="secondary" onclick="logChairIntervention('${esc.id}', 'custom')">Add Custom Note</button>
+          ` : ''}
+          ${esc.status === 'under_chair_intervention' && !esc.apEscalation ? `
+            <button class="danger" onclick="escalateToAP('${esc.id}')">⬆️ Escalate to Assistant Principal</button>
+          ` : ''}
+        </div>
+      `}
+    </div>
+  `
+}
+
+window.logChairIntervention = function(escalationId, type) {
+  const escalations = loadEscalations()
+  const esc = escalations.find(e => e.id === escalationId)
+  if (!esc) return
+  const typeLabels = {'parents_conference': 'Parents Conference','counseling_session': 'Counseling Session','academic_support': 'Academic Support Plan','custom': 'Custom Intervention'}
+  const defaultNotes = {'parents_conference': 'Conducted parents conference to discuss student progress and develop action plan with family support.','counseling_session': 'Provided one-on-one counseling to address academic concerns and personal challenges affecting performance.','academic_support': 'Implemented academic support plan including tutoring schedule and learning resources.','custom': ''}
+  const typeLabel = typeLabels[type]
+  const placeholder = defaultNotes[type]
+  openModal(`<h3>${typeLabel}</h3><div style="margin-top:12px"><label for="interventionNote">Intervention Details:</label><textarea id="interventionNote" placeholder="${placeholder}">${type === 'custom' ? '' : placeholder}</textarea></div><div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px"><button id="saveNote">Log Intervention</button><button id="cancelModal" class="secondary">Cancel</button></div>`)
+  document.getElementById('cancelModal').addEventListener('click', closeModal)
+  document.getElementById('saveNote').addEventListener('click', () => {
+    const note = document.getElementById('interventionNote').value.trim()
+    if (!note) {alert('Please enter intervention details');return}
+    saveChairIntervention(escalationId, typeLabel, note)
+    closeModal()
+  })
+}
+
+function saveChairIntervention(escalationId, type, notes) {
+  const escalations = loadEscalations()
+  const esc = escalations.find(e => e.id === escalationId)
+  if (!esc) return
+  if (!esc.chairInterventions) esc.chairInterventions = []
+  esc.chairInterventions.push({type: type,notes: notes,date: new Date().toISOString(),by: chairInfo.name})
+  if (esc.status === 'escalated_to_chair') {esc.status = 'under_chair_intervention'}
+  saveEscalations(escalations)
+  renderCases()
+  alert(`Intervention logged successfully!\n\nStudent: ${esc.studentName}\nAction: ${type}\n\nThe teacher and adviser have been notified.`)
+}
+
+window.escalateToAP = function(escalationId) {
+  const escalations = loadEscalations()
+  const esc = escalations.find(e => e.id === escalationId)
+  if (!esc) return
+  openModal(`<h3 style="color:var(--danger)">⚠️ Escalate to Assistant Principal</h3><p>This case requires administrative intervention beyond strand level support.</p><div style="margin-top:12px"><label for="apSummary">Summary for Assistant Principal:</label><textarea id="apSummary" placeholder="Summarize interventions attempted and why AP escalation is needed...">Student ${esc.studentName} continues to struggle despite comprehensive interventions:
+
+Teacher: ${esc.teacherIntervention}
+Adviser: ${esc.adviserInterventions ? esc.adviserInterventions.length + ' interventions' : 'None'}
+Chairperson: ${esc.chairInterventions ? esc.chairInterventions.length + ' interventions' : 'None'}
+
+Student shows high risk of failure. Recommending AP involvement for administrative support and possible retention committee review.</textarea></div><div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px"><button id="confirmAPEscalate" class="danger">Escalate to AP</button><button id="cancelModal" class="secondary">Cancel</button></div>`)
+  document.getElementById('cancelModal').addEventListener('click', closeModal)
+  document.getElementById('confirmAPEscalate').addEventListener('click', () => {
+    const summary = document.getElementById('apSummary').value.trim()
+    if (!summary) {alert('Please provide a summary');return}
+    esc.status = 'escalated_to_ap'
+    esc.apEscalation = {summary: summary,date: new Date().toISOString(),by: chairInfo.name}
+    saveEscalations(escalations)
+    renderCases()
+    closeModal()
+    alert(`Case escalated to Assistant Principal!\n\nStudent: ${esc.studentName}\nSubject: ${esc.subject}\n\nThe AP, teacher, and adviser have been notified.`)
+  })
+}
+
+function renderFeedback() {
+  const escalations = loadEscalations()
+  const selectedSection = document.getElementById('sectionFilterFeedback').value
+  let filtered = escalations
+  if (selectedSection) {filtered = escalations.filter(e => e.sectionName === selectedSection)}
+  const byStudent = {}
+  filtered.forEach(esc => {
+    const key = `${esc.studentName}|${esc.sectionName}`
+    if (!byStudent[key]) {byStudent[key] = {studentName: esc.studentName,sectionName: esc.sectionName,interventions: []}}
+    if (esc.teacherIntervention) {byStudent[key].interventions.push({type: 'Teacher',subject: esc.subject,teacher: esc.teacherName,content: esc.teacherIntervention,date: esc.escalatedDate})}
+    if (esc.adviserInterventions) {esc.adviserInterventions.forEach(int => {byStudent[key].interventions.push({type: 'Adviser',subject: esc.subject,subtype: int.type,content: int.notes,by: int.by,date: int.date})})}
+    if (esc.chairInterventions) {esc.chairInterventions.forEach(int => {byStudent[key].interventions.push({type: 'Chairperson',subject: esc.subject,subtype: int.type,content: int.notes,by: int.by,date: int.date})})}
+  })
+  if (Object.keys(byStudent).length === 0) {document.getElementById('feedbackContent').innerHTML = `<div style="text-align:center;padding:40px;color:var(--muted)"><p>No intervention feedback available.</p></div>`;return}
+  let html = ''
+  Object.keys(byStudent).sort().forEach(key => {
+    const student = byStudent[key]
+    html += `<div class="student-card"><div class="student-header"><span>${student.studentName}</span><span class="small muted">${student.sectionName}</span></div><div class="student-meta"><strong>Total Interventions:</strong> ${student.interventions.length}</div>${student.interventions.map(int => `<div class="intervention-item"><div class="intervention-label">${int.type === 'Teacher' ? '📝' : int.type === 'Adviser' ? '👤' : '🏛️'} ${int.type}${int.subtype ? ': ' + int.subtype : ''} ${int.subject ? `(${int.subject})` : ''}${int.teacher ? `- ${int.teacher}` : ''}${int.by ? `- ${int.by}` : ''}</div><div class="intervention-content">${int.content}</div><div class="timeline-meta" style="margin-top:4px">${new Date(int.date).toLocaleDateString()}</div></div>`).join('')}</div>`
+  })
+  document.getElementById('feedbackContent').innerHTML = html
+}
+
+window.switchTab = function(tab) {
+  currentTab = tab
+  document.getElementById('tabEscalated').classList.toggle('active', tab === 'escalated')
+  document.getElementById('tabFeedback').classList.toggle('active', tab === 'feedback')
+  document.getElementById('escalatedView').style.display = tab === 'escalated' ? 'block' : 'none'
+  document.getElementById('feedbackView').style.display = tab === 'feedback' ? 'block' : 'none'
+  if (tab === 'feedback') {populateSectionFilter();renderFeedback()}
+}
+
+function openModal(html){modalBox.innerHTML = html;modal.style.display = 'flex'}
+function closeModal(){modal.style.display = 'none';modalBox.innerHTML = ''}
+modal.addEventListener('click', (e)=>{ if(e.target === modal) closeModal() })
+
+subjectFilter.addEventListener('change', (e) => {currentSubject = e.target.value;renderCases()})
+statusFilter.addEventListener('change', (e) => {currentStatusFilter = e.target.value;renderCases()})
+document.getElementById('sectionFilterFeedback').addEventListener('change', () => {renderFeedback()})
+refreshBtn.addEventListener('click', () => {populateSubjectFilter();renderCases();if (currentTab === 'feedback') {populateSectionFilter();renderFeedback()}alert('Data refreshed! Showing latest updates.')})
+
+populateSubjectFilter()
+renderCases()
+setInterval(() => {populateSubjectFilter();renderCases();if (currentTab === 'feedback') {renderFeedback()}}, 30000)
+</script>
+</body>
+</html>

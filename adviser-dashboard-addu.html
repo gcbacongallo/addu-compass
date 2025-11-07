@@ -1,0 +1,935 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>ADDU SHS COMPASS - Adviser Dashboard</title>
+<style>
+  :root{
+    --bg:#f4f7fb; --card:#fff; --muted:#6b7280; --accent:#2F3590; --accent-dark:#1f2560;
+    --danger:#ef4444; --warning:#f59e0b; --success:#10b981; --border:#e6eef0; --radius:10px; --gold:#FFD700;
+  }
+  *{box-sizing:border-box}
+  body{font-family:Inter,system-ui,Segoe UI,Roboto,Arial;background:var(--bg);margin:0;color:#0f172a}
+  header{background:linear-gradient(135deg,#2F3590,#4a51b8);padding:24px 32px;color:#fff;display:flex;align-items:center;justify-content:space-between;border-bottom:4px solid #FFD700;box-shadow:0 4px 12px rgba(47,53,144,0.15)}
+  .logo-placeholder {
+    width: 70px;
+    height: 70px;
+    background-color: #fff;
+    border: 2px solid #FFD700;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    text-align: center;
+    color: #2F3590;
+    padding: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .logo-placeholder:hover {
+    box-shadow: 0 0 12px rgba(255, 215, 0, 0.6);
+    border-color: #FFC700;
+  }
+  .logo-placeholder img {
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: 6px;
+  }
+  .adviser-info {
+    text-align: right;
+  }
+  .adviser-info .adviser-name {
+    font-size: 17px;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: 0.3px;
+  }
+  .adviser-info .section-name {
+    font-size: 14px;
+    opacity: 0.9;
+    margin: 2px 0 0 0;
+  }
+  .header-center {
+    flex: 1;
+    text-align: center;
+  }
+  .header-center h1 {
+    font-size: 26px;
+    margin: 0 0 6px 0;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+  }
+  .header-center .subtitle {
+    font-size: 12px;
+    opacity: 0.9;
+    margin: 3px 0;
+    font-weight: 400;
+  }
+  .header-center .school-name {
+    font-size: 12px;
+    opacity: 0.85;
+    margin: 2px 0 0 0;
+    font-style: italic;
+  }
+  main{max-width:1200px;margin:20px auto;padding:18px}
+  .card{background:var(--card);padding:16px;border-radius:var(--radius);box-shadow:0 8px 20px rgba(2,6,23,0.06);border:1px solid var(--border);margin-bottom:16px}
+  .row{display:flex;gap:12px;align-items:center}
+  select,input,button,textarea{font:inherit}
+  input, select, textarea {width:100%; padding: 6px 8px; border-radius: 6px; border: 1px solid #dbe7e6;}
+  textarea {min-height: 120px; resize: vertical; font-family: monospace;}
+  
+  button{background:var(--accent);color:#fff;border:none;padding:8px 12px;border-radius:8px;cursor:pointer;width:auto;}
+  button.secondary{background:#e6eef0;color:#2F3590;font-weight:600}
+  button.danger{background:var(--danger);color:#fff}
+  button.warning{background:var(--warning);color:#fff}
+  .small{font-size:13px;color:var(--muted)}
+  .muted{color:var(--muted)}
+  
+  .stat{display:flex;gap:12px;margin-top:8px;flex-wrap:wrap}
+  .stat .s{background:#fff;padding:12px 16px;border-radius:8px;border:1px solid var(--border);min-width:140px;text-align:center}
+  .stat .s.danger{border-color:var(--danger);background:#fff5f5}
+  .stat .s.warning{border-color:var(--warning);background:#fffbeb}
+  .stat .s.success{border-color:var(--success);background:#f0fdf4}
+  
+  .modal{position:fixed;inset:0;background:rgba(2,6,23,0.45);display:none;align-items:center;justify-content:center;padding:16px;z-index:1000}
+  .modal .box{width:700px;background:#fff;padding:18px;border-radius:10px;max-height:90vh;overflow:auto}
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  label{font-size:13px;color:#243b4a;display:block;margin-bottom:4px;}
+  
+  .escalation-card {
+    background: white;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+    border-left: 4px solid var(--danger);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  }
+  .escalation-card.resolved {
+    border-left-color: var(--success);
+    background: #f0fdf4;
+  }
+  .escalation-card.escalated-to-chair {
+    border-left-color: #dc2626;
+    background: #fef2f2;
+  }
+  .escalation-card.multi-subject {
+    border-left: 4px solid var(--warning);
+  }
+  .escalation-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 12px;
+  }
+  .student-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: #0f172a;
+  }
+  .status-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+  .status-badge.pending {
+    background: #fef3c7;
+    color: #92400e;
+  }
+  .status-badge.under_intervention {
+    background: #dbeafe;
+    color: #1e40af;
+  }
+  .status-badge.escalated_to_chair {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+  .status-badge.resolved {
+    background: #d1fae5;
+    color: #065f46;
+  }
+  .escalation-meta {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+  .escalation-meta span {
+    margin-right: 16px;
+  }
+  .intervention-section {
+    background: #f9fafb;
+    padding: 12px;
+    border-radius: 6px;
+    margin-top: 12px;
+    font-size: 13px;
+  }
+  .intervention-section strong {
+    display: block;
+    margin-bottom: 6px;
+    color: #374151;
+  }
+  .action-buttons {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .action-buttons button {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+  .timeline {
+    margin-top: 12px;
+    padding-left: 12px;
+    border-left: 2px solid #e5e7eb;
+  }
+  .timeline-entry {
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 12px;
+  }
+  .timeline-entry:last-child {
+    border-bottom: none;
+  }
+  .timeline-header {
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 4px;
+  }
+  .timeline-content {
+    color: #6b7280;
+  }
+  .timeline-meta {
+    color: #9ca3af;
+    font-size: 11px;
+    margin-top: 4px;
+  }
+  .filter-section {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .editable-header {
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 4px;
+    transition: background 0.2s;
+  }
+  .editable-header:hover {
+    background-color: rgba(255,255,255,0.2);
+  }
+  
+  .subject-header {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--accent);
+    margin: 0 0 8px 0;
+  }
+  
+  /* Subject issue styles for multi-subject view */
+  .subject-issue {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+  .subject-issue:last-child {
+    margin-bottom: 0;
+  }
+  .subject-issue-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .subject-name-tag {
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--accent);
+  }
+  .multi-subject-badge {
+    display: inline-block;
+    background: var(--warning);
+    color: white;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 700;
+    margin-left: 8px;
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo-placeholder" id="logoPlaceholder" title="Click to upload AdDU logo">
+    <span id="logoText">LOGO</span>
+    <img id="logoImg" style="display:none;" alt="School Logo">
+  </div>
+  <input type="file" id="logoUpload" accept="image/*" style="display:none;">
+  
+  <div class="header-center">
+    <h1>COMPASS</h1>
+    <div class="subtitle">Comprehensive Monitoring & Progress Assessment Support System</div>
+    <div class="school-name">Ateneo de Davao University - Senior High School</div>
+  </div>
+  
+  <div class="adviser-info">
+    <div class="adviser-name editable-header" id="adviserName" title="Click to edit">Adviser Name</div>
+    <div class="section-name editable-header" id="adviserSection" title="Click to edit">Advisory Section</div>
+  </div>
+</header>
+
+<main>
+  <section class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <h2 style="margin:0;font-size:20px">Escalated Student Cases</h2>
+      <button id="refreshBtn" class="secondary">🔄 Refresh Data</button>
+    </div>
+    
+    <div class="filter-section">
+      <label class="small">View by Subject:</label>
+      <select id="subjectFilter" style="width:auto;min-width:200px">
+        <option value="">-- Select Subject --</option>
+      </select>
+      <button id="viewAllBtn" class="secondary">View All Students</button>
+      
+      <div style="margin-left:auto;display:flex;gap:12px;align-items:center">
+        <label class="small">Status:</label>
+        <select id="statusFilter" style="width:auto">
+          <option value="all">All Cases</option>
+          <option value="pending">Pending Action</option>
+          <option value="under_intervention">Under Intervention</option>
+          <option value="escalated_to_chair">Escalated to Chair</option>
+          <option value="resolved">Resolved</option>
+        </select>
+      </div>
+    </div>
+    
+    <div class="stat" id="summaryStats">
+      <div class="s">
+        <div class="small muted">Total Cases</div>
+        <div style="font-weight:700;font-size:24px" id="totalCases">0</div>
+      </div>
+      <div class="s danger">
+        <div class="small muted">Pending Action</div>
+        <div style="font-weight:700;font-size:24px;color:var(--danger)" id="pendingCases">0</div>
+      </div>
+      <div class="s warning">
+        <div class="small muted">Under Intervention</div>
+        <div style="font-weight:700;font-size:24px;color:var(--warning)" id="activeCases">0</div>
+      </div>
+      <div class="s success">
+        <div class="small muted">Resolved</div>
+        <div style="font-weight:700;font-size:24px;color:var(--success)" id="resolvedCases">0</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" id="casesSection" style="display:none">
+    <div id="currentSubjectHeader" style="margin-bottom:16px"></div>
+    <div id="escalationsList"></div>
+  </section>
+
+  <section class="card" id="welcomeSection">
+    <div style="text-align:center;padding:60px 20px;color:var(--muted)">
+      
+      <h3 style="margin:0 0 12px 0;color:#0f172a">Select a Subject to View Cases</h3>
+      <p style="margin:0">Choose a subject from the dropdown above to view and manage escalated student cases.</p>
+      <p class="small" style="margin-top:8px">Or click "View All Students" to see the complete overview grouped by student.</p>
+    </div>
+  </section>
+</main>
+
+<div id="modal" class="modal"><div class="box" id="modalBox"></div></div>
+
+<script>
+const ESCALATIONS_KEY = 'compass_escalations'
+const ADVISER_KEY = 'compass_adviser_info'
+const LOGO_KEY = 'compass_logo'
+
+function loadAdviserInfo(){
+  try{
+    const raw = localStorage.getItem(ADVISER_KEY)
+    if(!raw) return {name: 'Adviser Name', section: 'Advisory Section'}
+    return JSON.parse(raw)
+  } catch(e){
+    return {name: 'Adviser Name', section: 'Advisory Section'}
+  }
+}
+function saveAdviserInfo(info){ localStorage.setItem(ADVISER_KEY, JSON.stringify(info)) }
+
+function loadLogo(){
+  try{
+    return localStorage.getItem(LOGO_KEY)
+  } catch(e){
+    return null
+  }
+}
+function saveLogo(dataUrl){ 
+  try {
+    localStorage.setItem(LOGO_KEY, dataUrl)
+  } catch(e) {
+    alert('Logo file too large for storage. Please use a smaller image.')
+  }
+}
+
+function loadEscalations(){
+  try{
+    const raw = localStorage.getItem(ESCALATIONS_KEY)
+    if(!raw) return []
+    return JSON.parse(raw)
+  } catch(e){
+    return []
+  }
+}
+
+function saveEscalations(escalations){
+  localStorage.setItem(ESCALATIONS_KEY, JSON.stringify(escalations))
+}
+
+let adviserInfo = loadAdviserInfo()
+let currentSubject = ''
+let currentStatusFilter = 'all'
+let viewingAll = false
+
+const adviserNameEl = document.getElementById('adviserName')
+const adviserSectionEl = document.getElementById('adviserSection')
+const logoPlaceholder = document.getElementById('logoPlaceholder')
+const logoUpload = document.getElementById('logoUpload')
+const logoImg = document.getElementById('logoImg')
+const logoText = document.getElementById('logoText')
+const totalCasesEl = document.getElementById('totalCases')
+const pendingCasesEl = document.getElementById('pendingCases')
+const activeCasesEl = document.getElementById('activeCases')
+const resolvedCasesEl = document.getElementById('resolvedCases')
+const subjectFilter = document.getElementById('subjectFilter')
+const statusFilter = document.getElementById('statusFilter')
+const viewAllBtn = document.getElementById('viewAllBtn')
+const refreshBtn = document.getElementById('refreshBtn')
+const escalationsList = document.getElementById('escalationsList')
+const casesSection = document.getElementById('casesSection')
+const welcomeSection = document.getElementById('welcomeSection')
+const currentSubjectHeader = document.getElementById('currentSubjectHeader')
+const modal = document.getElementById('modal')
+const modalBox = document.getElementById('modalBox')
+
+function updateAdviserDisplay(){
+  adviserNameEl.textContent = adviserInfo.name
+  adviserSectionEl.textContent = adviserInfo.section
+}
+updateAdviserDisplay()
+
+function updateLogoDisplay(){
+  const logoData = loadLogo()
+  if(logoData){
+    logoImg.src = logoData
+    logoImg.style.display = 'block'
+    logoText.style.display = 'none'
+  } else {
+    logoImg.style.display = 'none'
+    logoText.style.display = 'block'
+  }
+}
+updateLogoDisplay()
+
+logoPlaceholder.addEventListener('click', ()=>{
+  logoUpload.click()
+})
+
+logoUpload.addEventListener('change', (e)=>{
+  const file = e.target.files[0]
+  if(!file) return
+  
+  if(!file.type.startsWith('image/')){
+    alert('Please select an image file')
+    return
+  }
+  
+  const reader = new FileReader()
+  reader.onload = (event)=>{
+    saveLogo(event.target.result)
+    updateLogoDisplay()
+  }
+  reader.readAsDataURL(file)
+})
+
+adviserNameEl.addEventListener('click', ()=>{
+  const newName = prompt('Edit adviser name:', adviserInfo.name)
+  if(newName && newName.trim() !== ''){
+    adviserInfo.name = newName.trim()
+    saveAdviserInfo(adviserInfo)
+    updateAdviserDisplay()
+  }
+})
+
+adviserSectionEl.addEventListener('click', ()=>{
+  const newSection = prompt('Edit advisory section:', adviserInfo.section)
+  if(newSection && newSection.trim() !== ''){
+    adviserInfo.section = newSection.trim()
+    saveAdviserInfo(adviserInfo)
+    updateAdviserDisplay()
+  }
+})
+
+function populateSubjectFilter(){
+  const escalations = loadEscalations()
+  const subjects = [...new Set(escalations.map(e => e.subject))].sort()
+  
+  subjectFilter.innerHTML = '<option value="">-- Select Subject --</option>'
+  subjects.forEach(subject => {
+    const option = document.createElement('option')
+    option.value = subject
+    option.textContent = subject
+    subjectFilter.appendChild(option)
+  })
+}
+
+function updateStats(filteredEscalations = null){
+  const escalations = filteredEscalations || loadEscalations()
+  
+  const pending = escalations.filter(e => e.status === 'pending').length
+  const active = escalations.filter(e => e.status === 'under_intervention').length
+  const resolved = escalations.filter(e => e.status === 'resolved').length
+  
+  totalCasesEl.textContent = escalations.length
+  pendingCasesEl.textContent = pending
+  activeCasesEl.textContent = active
+  resolvedCasesEl.textContent = resolved
+}
+
+function renderEscalations(){
+  const allEscalations = loadEscalations()
+  
+  if (allEscalations.length === 0) {
+    welcomeSection.style.display = 'block'
+    casesSection.style.display = 'none'
+    welcomeSection.innerHTML = `
+      <div style="text-align:center;padding:60px 20px;color:var(--muted)">
+        <div style="font-size:48px;margin-bottom:16px">✅</div>
+        <h3 style="margin:0 0 12px 0;color:#0f172a">No Escalated Cases</h3>
+        <p style="margin:0">There are currently no escalated student cases.</p>
+        <p class="small" style="margin-top:8px">Cases escalated by subject teachers will appear here.</p>
+      </div>
+    `
+    updateStats([])
+    return
+  }
+  
+  // Filter by subject
+  let escalations = viewingAll ? allEscalations : 
+                    currentSubject ? allEscalations.filter(e => e.subject === currentSubject) : []
+  
+  // Filter by status
+  if (currentStatusFilter !== 'all') {
+    escalations = escalations.filter(e => e.status === currentStatusFilter)
+  }
+  
+  updateStats(viewingAll ? allEscalations : 
+              currentSubject ? allEscalations.filter(e => e.subject === currentSubject) : allEscalations)
+  
+  if (!currentSubject && !viewingAll) {
+    welcomeSection.style.display = 'block'
+    casesSection.style.display = 'none'
+    return
+  }
+  
+  welcomeSection.style.display = 'none'
+  casesSection.style.display = 'block'
+  
+  // Update header
+  if (viewingAll) {
+    currentSubjectHeader.innerHTML = '<h3 class="subject-header">All Students - Consolidated View</h3><p class="small muted">Cases grouped by student to show complete intervention picture</p>'
+  } else {
+    currentSubjectHeader.innerHTML = `<h3 class="subject-header">${currentSubject}</h3>`
+  }
+  
+  if(escalations.length === 0){
+    escalationsList.innerHTML = `
+      <div style="text-align:center;padding:40px;color:var(--muted)">
+        <p>No ${currentStatusFilter === 'all' ? '' : currentStatusFilter.replace('_', ' ')} cases found${currentSubject ? ' for this subject' : ''}.</p>
+      </div>
+    `
+    return
+  }
+  
+  // Group by student if viewing all
+  if (viewingAll) {
+    const groupedByStudent = {}
+    escalations.forEach(esc => {
+      if (!groupedByStudent[esc.studentName]) {
+        groupedByStudent[esc.studentName] = []
+      }
+      groupedByStudent[esc.studentName].push(esc)
+    })
+    
+    let html = ''
+    Object.keys(groupedByStudent).sort().forEach(studentName => {
+      const studentCases = groupedByStudent[studentName]
+      const multiSubject = studentCases.length > 1
+      
+      html += renderConsolidatedStudentCard(studentName, studentCases, multiSubject)
+    })
+    escalationsList.innerHTML = html
+  } else {
+    let html = ''
+    escalations.forEach(esc => {
+      html += renderEscalationCard(esc)
+    })
+    escalationsList.innerHTML = html
+  }
+}
+
+function renderConsolidatedStudentCard(studentName, cases, isMultiSubject) {
+  // Determine overall worst status
+  const hasChair = cases.some(c => c.status === 'escalated_to_chair')
+  const hasActive = cases.some(c => c.status === 'under_intervention')
+  const hasPending = cases.some(c => c.status === 'pending')
+  const allResolved = cases.every(c => c.status === 'resolved')
+  
+  const overallStatus = hasChair ? 'escalated_to_chair' : 
+                        hasActive ? 'under_intervention' : 
+                        hasPending ? 'pending' : 'resolved'
+  
+  const statusLabel = overallStatus === 'pending' ? 'Pending Action' :
+                      overallStatus === 'under_intervention' ? 'Under Intervention' :
+                      overallStatus === 'escalated_to_chair' ? 'Escalated to Chair' :
+                      'Resolved'
+  
+  const cardClass = allResolved ? 'resolved' : 
+                    hasChair ? 'escalated-to-chair' : ''
+  
+  const sectionName = cases[0].sectionName
+  
+  let html = `
+    <div class="escalation-card ${cardClass}">
+      <div class="escalation-header">
+        <div>
+          <div class="student-name">
+            ${studentName}
+            ${isMultiSubject ? `<span style="display:inline-block;background:var(--warning);color:white;padding:3px 8px;border-radius:12px;font-size:10px;font-weight:700;margin-left:8px">${cases.length} SUBJECTS</span>` : ''}
+          </div>
+          <div class="escalation-meta">
+            <span><strong>Section:</strong> ${sectionName}</span>
+            <span><strong>Total Issues:</strong> ${cases.length}</span>
+          </div>
+        </div>
+        <span class="status-badge ${overallStatus}">${statusLabel}</span>
+      </div>
+  `
+  
+  // Render each subject issue
+  cases.forEach(esc => {
+    html += `
+      <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;padding:12px;margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <span style="font-weight:700;font-size:14px;color:var(--accent)">${esc.subject}</span>
+          <span class="status-badge ${esc.status}">${
+            esc.status === 'pending' ? 'Pending' :
+            esc.status === 'under_intervention' ? 'Active' :
+            esc.status === 'escalated_to_chair' ? 'Chair' :
+            'Resolved'
+          }</span>
+        </div>
+        
+        <div style="font-size:12px;color:var(--muted);margin-bottom:8px">
+          <strong>Teacher:</strong> ${esc.teacherName} | 
+          <strong>Escalated:</strong> ${new Date(esc.escalatedDate).toLocaleDateString()}
+        </div>
+        
+        <div style="font-size:13px;margin-bottom:8px">
+          <strong>Teacher's Intervention:</strong><br>
+          ${esc.teacherIntervention}
+        </div>
+        
+        ${esc.adviserInterventions && esc.adviserInterventions.length > 0 ? `
+          <div style="font-size:12px;color:var(--muted);margin-top:8px">
+            <strong>Adviser Actions:</strong> ${esc.adviserInterventions.map(i => i.type).join(', ')}
+          </div>
+        ` : ''}
+        
+        ${esc.chairEscalation ? `
+          <div style="background:#fef2f2;padding:8px;border-radius:4px;margin-top:8px;font-size:12px;border:1px solid #fecaca">
+            <strong style="color:var(--danger)">⚠️ Escalated to Chairperson</strong>
+          </div>
+        ` : ''}
+        
+        ${esc.status === 'resolved' ? `
+          <div style="background:#f0fdf4;padding:8px;border-radius:4px;margin-top:8px;font-size:12px;border:1px solid #bbf7d0">
+            <strong style="color:var(--success)">✓ Resolved</strong> - ${esc.resolutionNotes || 'Student performance improved'}
+          </div>
+        ` : `
+          <div class="action-buttons" style="margin-top:8px">
+            ${esc.status === 'pending' || esc.status === 'under_intervention' ? `
+              <button class="secondary" onclick="logIntervention('${esc.id}', 'informed_student')">Informed Student</button>
+              <button class="secondary" onclick="logIntervention('${esc.id}', 'informed_parents')">Informed Parents</button>
+              <button class="secondary" onclick="logIntervention('${esc.id}', 'custom')">Add Note</button>
+            ` : ''}
+            ${esc.status === 'under_intervention' && !esc.chairEscalation ? `
+              <button class="warning" onclick="escalateToChair('${esc.id}')">Escalate to Chair</button>
+            ` : ''}
+          </div>
+        `}
+      </div>
+    `
+  })
+  
+  html += `</div>`
+  return html
+}
+
+function renderEscalationCard(esc) {
+  const statusLabel = esc.status === 'pending' ? 'Pending Action' :
+                      esc.status === 'under_intervention' ? 'Under Intervention' :
+                      esc.status === 'escalated_to_chair' ? 'Escalated to Chair' :
+                      'Resolved'
+  
+  const cardClass = esc.status === 'resolved' ? 'resolved' : 
+                    esc.status === 'escalated_to_chair' ? 'escalated-to-chair' : ''
+  
+  return `
+    <div class="escalation-card ${cardClass}">
+      <div class="escalation-header">
+        <div>
+          <div class="student-name">${esc.studentName}</div>
+          <div class="escalation-meta">
+            <span><strong>Section:</strong> ${esc.sectionName}</span>
+            <span><strong>Teacher:</strong> ${esc.teacherName}</span>
+          </div>
+          <div class="escalation-meta">
+            <span><strong>Escalated:</strong> ${new Date(esc.escalatedDate).toLocaleDateString()}</span>
+          </div>
+        </div>
+        <span class="status-badge ${esc.status}">${statusLabel}</span>
+      </div>
+      
+      <div class="intervention-section">
+        <strong>Teacher's Intervention:</strong>
+        ${esc.teacherIntervention}
+      </div>
+      
+      ${esc.adviserInterventions && esc.adviserInterventions.length > 0 ? `
+        <div class="timeline">
+          <strong style="display:block;margin-bottom:8px;font-size:13px">Adviser Intervention History:</strong>
+          ${esc.adviserInterventions.map(int => `
+            <div class="timeline-entry">
+              <div class="timeline-header">📝 ${int.type}</div>
+              <div class="timeline-content">${int.notes}</div>
+              <div class="timeline-meta">${new Date(int.date).toLocaleDateString()} by ${int.by}</div>
+            </div>
+          `).join('')}
+        </div>
+      ` : ''}
+      
+      ${esc.chairEscalation ? `
+        <div class="intervention-section" style="background:#fef2f2;border:1px solid #fecaca">
+          <strong style="color:var(--danger)">⚠️ Escalated to Chairperson:</strong>
+          ${esc.chairEscalation.summary}
+          <div class="timeline-meta" style="margin-top:6px">${new Date(esc.chairEscalation.date).toLocaleDateString()} by ${esc.chairEscalation.by}</div>
+        </div>
+      ` : ''}
+      
+      ${esc.status === 'resolved' ? `
+        <div class="intervention-section" style="background:#f0fdf4;border:1px solid #bbf7d0">
+          <strong style="color:var(--success)">✓ Case Resolved</strong>
+          ${esc.resolutionNotes || 'Student performance improved'}
+          <div class="timeline-meta" style="margin-top:6px">${new Date(esc.resolvedDate).toLocaleDateString()} by ${esc.resolvedBy || 'System'}</div>
+        </div>
+      ` : `
+        <div class="action-buttons">
+          ${esc.status === 'pending' || esc.status === 'under_intervention' ? `
+            <button class="secondary" onclick="logIntervention('${esc.id}', 'informed_student')">Informed Student</button>
+            <button class="secondary" onclick="logIntervention('${esc.id}', 'informed_parents')">Informed Parents</button>
+            <button class="secondary" onclick="logIntervention('${esc.id}', 'custom')">Add Custom Note</button>
+          ` : ''}
+          ${esc.status === 'under_intervention' && !esc.chairEscalation ? `
+            <button class="warning" onclick="escalateToChair('${esc.id}')">Escalate to Chairperson</button>
+          ` : ''}
+        </div>
+      `}
+    </div>
+  `
+}
+
+window.logIntervention = function(escalationId, type) {
+  const escalations = loadEscalations()
+  const esc = escalations.find(e => e.id === escalationId)
+  if (!esc) return
+  
+  if (type === 'custom') {
+    openModal(`
+      <h3>Add Custom Intervention Note</h3>
+      <div style="margin-top:12px">
+        <label for="customNote">Intervention Details:</label>
+        <textarea id="customNote" placeholder="Describe the intervention action taken..."></textarea>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px">
+        <button id="saveCustomNote">Save Note</button>
+        <button id="cancelModal" class="secondary">Cancel</button>
+      </div>
+    `)
+    
+    document.getElementById('cancelModal').addEventListener('click', closeModal)
+    document.getElementById('saveCustomNote').addEventListener('click', () => {
+      const note = document.getElementById('customNote').value.trim()
+      if (!note) {
+        alert('Please enter intervention details')
+        return
+      }
+      
+      saveInterventionNote(escalationId, 'Custom Intervention', note)
+      closeModal()
+    })
+  } else {
+    const typeLabel = type === 'informed_student' ? 'Informed Student' : 'Informed Parents'
+    const defaultNote = type === 'informed_student' 
+      ? 'Spoke with student about academic performance. Discussed study strategies and available support resources.'
+      : 'Contacted parents/guardians regarding student\'s academic concerns. Requested parental support and follow-up at home.'
+    
+    openModal(`
+      <h3>${typeLabel}</h3>
+      <div style="margin-top:12px">
+        <label for="interventionNote">Additional Notes (optional):</label>
+        <textarea id="interventionNote" placeholder="${defaultNote}">${defaultNote}</textarea>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px">
+        <button id="saveNote">Log Intervention</button>
+        <button id="cancelModal" class="secondary">Cancel</button>
+      </div>
+    `)
+    
+    document.getElementById('cancelModal').addEventListener('click', closeModal)
+    document.getElementById('saveNote').addEventListener('click', () => {
+      const note = document.getElementById('interventionNote').value.trim()
+      saveInterventionNote(escalationId, typeLabel, note)
+      closeModal()
+    })
+  }
+}
+
+function saveInterventionNote(escalationId, type, notes) {
+  const escalations = loadEscalations()
+  const esc = escalations.find(e => e.id === escalationId)
+  if (!esc) return
+  
+  if (!esc.adviserInterventions) esc.adviserInterventions = []
+  
+  esc.adviserInterventions.push({
+    type: type,
+    notes: notes,
+    date: new Date().toISOString(),
+    by: adviserInfo.name
+  })
+  
+  if (esc.status === 'pending') {
+    esc.status = 'under_intervention'
+  }
+  
+  saveEscalations(escalations)
+  renderEscalations()
+  
+  alert(`Intervention logged successfully!\n\nStudent: ${esc.studentName}\nAction: ${type}\n\nThe subject teacher has been notified.`)
+}
+
+window.escalateToChair = function(escalationId) {
+  const escalations = loadEscalations()
+  const esc = escalations.find(e => e.id === escalationId)
+  if (!esc) return
+  
+  openModal(`
+    <h3 style="color:var(--danger)">⚠️ Escalate to Strand Chairperson</h3>
+    <p>This case has not shown improvement despite interventions. Escalating to the strand chairperson for additional support measures.</p>
+    <div style="margin-top:12px">
+      <label for="chairSummary">Summary for Chairperson:</label>
+      <textarea id="chairSummary" placeholder="Summarize the case, interventions attempted, and why escalation is needed...">Student ${esc.studentName} continues to struggle in ${esc.subject} despite teacher and adviser interventions. 
+
+Teacher intervention: ${esc.teacherIntervention}
+
+Adviser actions: ${esc.adviserInterventions ? esc.adviserInterventions.map(i => i.type).join(', ') : 'None yet'}
+
+Recommending chairperson involvement for additional academic support and counseling.</textarea>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px">
+        <button id="confirmEscalate" class="danger">Escalate to Chairperson</button>
+        <button id="cancelModal" class="secondary">Cancel</button>
+      </div>
+  `)
+  
+  document.getElementById('cancelModal').addEventListener('click', closeModal)
+  document.getElementById('confirmEscalate').addEventListener('click', () => {
+    const summary = document.getElementById('chairSummary').value.trim()
+    if (!summary) {
+      alert('Please provide a summary for the chairperson')
+      return
+    }
+    
+    esc.status = 'escalated_to_chair'
+    esc.chairEscalation = {
+      summary: summary,
+      date: new Date().toISOString(),
+      by: adviserInfo.name
+    }
+    
+    saveEscalations(escalations)
+    renderEscalations()
+    closeModal()
+    
+    alert(`Case escalated to Strand Chairperson!\n\nStudent: ${esc.studentName}\nSubject: ${esc.subject}\n\nThe chairperson and subject teacher have been notified.`)
+  })
+}
+
+function openModal(html){
+  modalBox.innerHTML = html
+  modal.style.display = 'flex'
+}
+
+function closeModal(){
+  modal.style.display = 'none'
+  modalBox.innerHTML = ''
+}
+
+modal.addEventListener('click', (e)=>{ if(e.target === modal) closeModal() })
+
+subjectFilter.addEventListener('change', (e) => {
+  currentSubject = e.target.value
+  viewingAll = false
+  renderEscalations()
+})
+
+statusFilter.addEventListener('change', (e) => {
+  currentStatusFilter = e.target.value
+  renderEscalations()
+})
+
+viewAllBtn.addEventListener('click', () => {
+  viewingAll = true
+  currentSubject = ''
+  subjectFilter.value = ''
+  renderEscalations()
+})
+
+refreshBtn.addEventListener('click', () => {
+  populateSubjectFilter()
+  renderEscalations()
+  alert('Data refreshed! Showing latest escalation updates.')
+})
+
+// Initialize
+populateSubjectFilter()
+updateStats()
+
+// Auto-refresh every 30 seconds
+setInterval(() => {
+  populateSubjectFilter()
+  renderEscalations()
+}, 30000)
+
+</script>
+</body>
+</html>

@@ -1,0 +1,1547 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>ADDU SHS COMPASS - Teacher Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root{
+    --bg:#f4f7fb; --card:#fff; --muted:#6b7280; --accent:#2F3590; --accent-dark:#1f2560;
+    --danger:#ef4444; --warning:#f59e0b; --success:#10b981; --border:#e6eef0; --radius:10px; --gold:#FFD700;
+  }
+  *{box-sizing:border-box}
+  body{font-family:Inter,system-ui,Segoe UI,Roboto,Arial;background:var(--bg);margin:0;color:#0f172a}
+  header{background:linear-gradient(135deg,#2F3590,#4a51b8);padding:24px 32px;color:#fff;display:flex;align-items:center;justify-content:space-between;border-bottom:4px solid #FFD700;box-shadow:0 4px 12px rgba(47,53,144,0.15)}
+  .logo-placeholder {
+    width: 70px;
+    height: 70px;
+    background-color: #fff;
+    border: 2px solid #FFD700;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    text-align: center;
+    color: #2F3590;
+    padding: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .logo-placeholder:hover {
+    box-shadow: 0 0 12px rgba(255, 215, 0, 0.6);
+    border-color: #FFC700;
+  }
+  .logo-placeholder img {
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: 6px;
+  }
+  .teacher-info {
+    text-align: right;
+  }
+  .teacher-info .teacher-name {
+    font-size: 17px;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: 0.3px;
+  }
+  .teacher-info .subject-name {
+    font-size: 14px;
+    opacity: 0.9;
+    margin: 2px 0 0 0;
+  }
+  .header-center {
+    flex: 1;
+    text-align: center;
+  }
+  .header-center h1 {
+    font-size: 26px;
+    margin: 0 0 6px 0;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+  }
+  .header-center .subtitle {
+    font-size: 12px;
+    opacity: 0.9;
+    margin: 3px 0;
+    font-weight: 400;
+  }
+  .header-center .school-name {
+    font-size: 12px;
+    opacity: 0.85;
+    margin: 2px 0 0 0;
+    font-style: italic;
+  }
+  main{max-width:1200px;margin:20px auto;padding:18px}
+  .card{background:var(--card);padding:16px;border-radius:var(--radius);box-shadow:0 8px 20px rgba(2,6,23,0.06);border:1px solid var(--border);margin-bottom:16px}
+  .row{display:flex;gap:12px;align-items:center}
+  select,input,button,textarea{font:inherit}
+  input, select, textarea {width:100%; padding: 6px 8px; border-radius: 6px; border: 1px solid #dbe7e6;}
+  textarea {min-height: 120px; resize: vertical; font-family: monospace;}
+  
+  button{background:var(--accent);color:#fff;border:none;padding:8px 12px;border-radius:8px;cursor:pointer;width:auto;}
+  button.secondary{background:#e6eef0;color:#2F3590;font-weight:600}
+  button.danger{background:var(--danger);color:#fff}
+  .small{font-size:13px;color:var(--muted)}
+  .muted{color:var(--muted)}
+  table{width:100%;border-collapse:collapse;margin-top:12px;font-size:13px}
+  th,td{border:1px solid #e9eef2;padding:6px 8px;text-align:center;vertical-align:middle}
+  thead th{background:#fbfdff}
+  .cat-header{background:#eef9f8;font-weight:700}
+  .name-col{min-width:220px;text-align:left;padding-left:12px;font-weight:600}
+  input.score{width:72px;padding:6px;border-radius:6px;border:1px solid #dbe7e6;text-align:center}
+  .stat{display:flex;gap:12px;margin-top:8px}
+  .stat .s{background:#fff;padding:10px;border-radius:8px;border:1px solid var(--border);min-width:120px;text-align:center}
+  .literal{font-weight:700}
+  .modal{position:fixed;inset:0;background:rgba(2,6,23,0.45);display:none;align-items:center;justify-content:center;padding:16px;z-index:1000}
+  .modal .box{width:640px;background:#fff;padding:18px;border-radius:10px;max-height:90vh;overflow:auto}
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  label{font-size:13px;color:#243b4a;display:block;margin-bottom:4px;}
+  .footer{font-size:13px;color:var(--muted);text-align:center;margin-top:12px}
+  @media(max-width:980px){.row{flex-direction:column;align-items:stretch}}
+  .del-col-btn{color:var(--danger);font-weight:700;cursor:pointer;padding-left:4px;font-size:14px;display:inline-block;opacity:0.5}
+  th:hover .del-col-btn{opacity:1}
+  
+  .editable-name {
+    cursor: pointer;
+    text-decoration: underline dashed #aaa;
+    text-decoration-thickness: 1px;
+    padding: 2px 4px;
+    border-radius: 4px;
+  }
+  .editable-name:hover {
+    background-color: #f4f7fb;
+  }
+
+  .add-intervention-btn { padding: 4px 8px; font-size: 12px; }
+  .clear-intervention-btn { 
+    background: none; border: none; color: var(--danger); 
+    font-weight: bold; cursor: pointer; padding: 0 4px; 
+    margin-left: 4px; font-size: 14px;
+  }
+  .escalate-btn {
+    padding: 4px 8px;
+    font-size: 11px;
+    background: var(--danger);
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-left: 4px;
+  }
+  .escalated-badge {
+    display: inline-block;
+    background: var(--danger);
+    color: #fff;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    margin-left: 4px;
+  }
+  .flagged-student-name { background-color: #fff5f5; }
+  .flagged-student-name .editable-name { color: var(--danger); font-weight: 700; }
+
+  .lni-summary {
+    background: #fff5f5;
+    border: 2px solid var(--danger);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-top: 16px;
+  }
+  .lni-summary h3 {
+    margin: 0 0 12px 0;
+    color: var(--danger);
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .lni-summary h3::before {
+    content: "⚠";
+    font-size: 20px;
+  }
+  .lni-student-item {
+    padding: 8px 12px;
+    background: white;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    border-left: 4px solid var(--danger);
+  }
+  .lni-student-item:last-child {
+    margin-bottom: 0;
+  }
+  .lni-student-name {
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 4px;
+  }
+  .lni-student-details {
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .lni-student-details span {
+    display: inline-block;
+    margin-right: 12px;
+  }
+
+  .editable-header {
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 4px;
+    transition: background 0.2s;
+  }
+  .editable-header:hover {
+    background-color: rgba(255,255,255,0.2);
+  }
+
+  /* Case Progress Monitoring Styles */
+  .case-monitoring {
+    background: #f0f9ff;
+    border: 2px solid var(--accent);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-top: 16px;
+  }
+  .case-monitoring h3 {
+    margin: 0 0 12px 0;
+    color: var(--accent);
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .case-monitoring h3::before {
+    content: "📊";
+    font-size: 20px;
+  }
+  .case-item {
+    padding: 12px;
+    background: white;
+    border-radius: 6px;
+    margin-bottom: 12px;
+    border-left: 4px solid var(--accent);
+  }
+  .case-item.escalated-to-chair {
+    border-left-color: var(--danger);
+    background: #fff5f5;
+  }
+  .case-item.escalated-to-ap {
+    border-left-color: #7c2d12;
+    background: #fff7ed;
+  }
+  .case-item.resolved {
+    border-left-color: var(--success);
+    background: #f0fdf4;
+  }
+  .case-item:last-child {
+    margin-bottom: 0;
+  }
+  .case-student-name {
+    font-weight: 700;
+    font-size: 15px;
+    color: #0f172a;
+    margin-bottom: 8px;
+  }
+  .case-status-badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    margin-left: 8px;
+  }
+  .case-status-badge.pending {
+    background: #fef3c7;
+    color: #92400e;
+  }
+  .case-status-badge.under_adviser_intervention {
+    background: #dbeafe;
+    color: #1e40af;
+  }
+  .case-status-badge.escalated_to_chair {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+  .case-status-badge.under_chair_intervention {
+    background: #fef3c7;
+    color: #92400e;
+  }
+  .case-status-badge.escalated_to_ap {
+    background: #fff7ed;
+    color: #7c2d12;
+  }
+  .case-status-badge.under_ap_intervention {
+    background: #dbeafe;
+    color: #1e40af;
+  }
+  .case-status-badge.summer_class {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+  .case-status-badge.resolved {
+    background: #d1fae5;
+    color: #065f46;
+  }
+  .timeline {
+    margin-top: 12px;
+    padding-left: 12px;
+    border-left: 2px solid #e5e7eb;
+  }
+  .timeline-entry {
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  .timeline-entry:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+  }
+  .timeline-header {
+    font-weight: 600;
+    font-size: 12px;
+    color: #374151;
+    margin-bottom: 4px;
+  }
+  .timeline-content {
+    font-size: 12px;
+    color: #6b7280;
+    margin-bottom: 4px;
+  }
+  .timeline-meta {
+    font-size: 11px;
+    color: #9ca3af;
+  }
+  .refresh-monitoring {
+    float: right;
+    padding: 4px 12px;
+    font-size: 12px;
+  }
+
+</style>
+</head>
+<body>
+<header>
+  <div class="logo-placeholder" id="logoPlaceholder" title="Click to upload AdDU logo">
+    <span id="logoText">LOGO</span>
+    <img id="logoImg" style="display:none;" alt="School Logo">
+  </div>
+  <input type="file" id="logoUpload" accept="image/*" style="display:none;">
+  
+  <div class="header-center">
+    <h1>COMPASS</h1>
+    <div class="subtitle">Comprehensive Monitoring & Progress Assessment Support System</div>
+    <div class="school-name">Ateneo de Davao University - Senior High School</div>
+  </div>
+  
+  <div class="teacher-info">
+    <div class="teacher-name editable-header" id="teacherName" title="Click to edit">Gerard Bacongallo</div>
+    <div class="subject-name editable-header" id="subjectName" title="Click to edit">Program Logic and Design</div>
+  </div>
+</header>
+
+<main>
+  <section class="card">
+    <div class="row" style="justify-content:space-between">
+      <div style="display:flex;gap:12px;align-items:center">
+        <label class="small">Select Section</label>
+        <select id="sectionSelect"></select>
+        <button id="newSectionBtn" class="secondary" style="padding: 8px;">+ New</button>
+        <button id="deleteSectionBtn" class="danger" style="padding: 8px;">Delete</button>
+      </div>
+
+      <div style="display:flex;gap:8px;align-items:center">
+        <button id="addStudentBtn">+ Add Student</button>
+        <button id="addColumnBtn">+ Add Column</button>
+        <button id="exportXlsx" class="secondary">Export XLSX</button>
+      </div>
+    </div>
+    <div class="small muted" style="margin-top:8px"></div>
+  </section>
+
+  <section id="gradeCard" class="card" style="display:none">
+    <div style="margin-bottom:16px">
+      <h2 style="font-size:24px;margin:0;color:var(--accent);font-weight:800" id="subjectHeader">Subject</h2>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div style="font-weight:800" id="recordTitle">Class Record</div>
+        <div class="small muted" id="recordMeta"></div>
+      </div>
+      <div style="display:flex;gap:12px;align-items:center">
+        <div class="muted small">Weights:</div>
+        <div class="muted small" id="weightsLabel">WW 25% • PT 45% • QA 30%</div>
+        <button id="editWeights" class="secondary">Edit Weights</button>
+      </div>
+    </div>
+
+    <div style="overflow:auto;margin-top:12px">
+      <table id="gradeTable" aria-label="Gradebook">
+        <thead id="tableHead"></thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+
+    <div class="stat" id="summaryStats"></div>
+
+    <div id="lniSummary" style="display:none"></div>
+    
+    <!-- Case Progress Monitoring Section -->
+    <div id="caseMonitoring" style="display:none"></div>
+  </section>
+
+  <div class="footer"></div>
+</main>
+
+<div id="modal" class="modal"><div class="box" id="modalBox"></div></div>
+
+<script>
+const STORAGE_KEY = 'compass_sim_v1'
+const TEACHER_KEY = 'compass_teacher_info'
+const LOGO_KEY = 'compass_logo'
+const ESCALATIONS_KEY = 'compass_escalations'
+
+const sample = {
+  sections: [
+    {
+      id: 'Grade-11-Section-1',
+      name: 'Grade 11 - Section 1',
+      students: [
+        {id: 's1', name: 'Student 1'},
+        {id: 's2', name: 'Student 2'},
+        {id: 's3', name: 'Student 3'}
+      ],
+      columns: [
+        {id:'ww1', name:'WW1', category:'WW', points:30},
+        {id:'pt1', name:'PT1', category:'PT', points:25},
+        {id:'exam', name:'Exam', category:'QA', points:50}
+      ],
+      scores: {}
+    }
+  ],
+  weights: {WW:25, PT:45, QA:30}
+}
+
+// Cleanup escalations when deleting a section
+function cleanupEscalationsForSection(sectionName, subject) {
+  try {
+    const escalationsRaw = localStorage.getItem(ESCALATIONS_KEY);
+    if (!escalationsRaw) return;
+
+    let escalations = JSON.parse(escalationsRaw);
+    const beforeCount = escalations.length;
+
+    // Remove escalations matching this section and subject
+    escalations = escalations.filter(esc => {
+      return !(esc.sectionName === sectionName && esc.subject === subject);
+    });
+
+    const removedCount = beforeCount - escalations.length;
+    localStorage.setItem(ESCALATIONS_KEY, JSON.stringify(escalations));
+
+    if (removedCount > 0) {
+      console.log(`Removed ${removedCount} escalation(s) for ${sectionName} - ${subject}`);
+    }
+  } catch(e) {
+    console.error('Error cleaning up escalations:', e);
+  }
+}
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if(!raw) { localStorage.setItem(STORAGE_KEY, JSON.stringify(sample)); return JSON.parse(JSON.stringify(sample)) }
+    return JSON.parse(raw)
+  } catch(e){
+    console.error('load state error', e)
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(sample))
+    return JSON.parse(JSON.stringify(sample))
+  }
+}
+function saveState(state){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)) }
+
+function loadTeacherInfo(){
+  try{
+    const raw = localStorage.getItem(TEACHER_KEY)
+    if(!raw) return {teacher: 'Gerard Bacongallo', subject: 'Program Logic and Design'}
+    return JSON.parse(raw)
+  } catch(e){
+    return {teacher: 'Gerard Bacongallo', subject: 'Program Logic and Design'}
+  }
+}
+function saveTeacherInfo(info){ localStorage.setItem(TEACHER_KEY, JSON.stringify(info)) }
+
+function loadLogo(){
+  try{
+    return localStorage.getItem(LOGO_KEY)
+  } catch(e){
+    return null
+  }
+}
+function saveLogo(dataUrl){ 
+  try {
+    localStorage.setItem(LOGO_KEY, dataUrl)
+  } catch(e) {
+    alert('Logo file too large for storage. Please use a smaller image.')
+  }
+}
+
+function loadEscalations(){
+  try{
+    const raw = localStorage.getItem(ESCALATIONS_KEY)
+    if(!raw) return []
+    return JSON.parse(raw)
+  } catch(e){
+    return []
+  }
+}
+
+let state = loadState()
+let teacherInfo = loadTeacherInfo()
+
+const sectionSelect = document.getElementById('sectionSelect')
+const newSectionBtn = document.getElementById('newSectionBtn')
+const deleteSectionBtn = document.getElementById('deleteSectionBtn')
+const addStudentBtn = document.getElementById('addStudentBtn')
+const addColumnBtn = document.getElementById('addColumnBtn')
+const exportXlsxBtn = document.getElementById('exportXlsx')
+const gradeCard = document.getElementById('gradeCard')
+const recordTitle = document.getElementById('recordTitle')
+const recordMeta = document.getElementById('recordMeta')
+const weightsLabel = document.getElementById('weightsLabel')
+const editWeightsBtn = document.getElementById('editWeights')
+const tableHead = document.getElementById('tableHead')
+const tableBody = document.getElementById('tableBody')
+const modal = document.getElementById('modal')
+const modalBox = document.getElementById('modalBox')
+const summaryStats = document.getElementById('summaryStats')
+const lniSummary = document.getElementById('lniSummary')
+const caseMonitoring = document.getElementById('caseMonitoring')
+
+const teacherNameEl = document.getElementById('teacherName')
+const subjectNameEl = document.getElementById('subjectName')
+const logoPlaceholder = document.getElementById('logoPlaceholder')
+const logoUpload = document.getElementById('logoUpload')
+const logoImg = document.getElementById('logoImg')
+const logoText = document.getElementById('logoText')
+
+function updateTeacherDisplay(){
+  teacherNameEl.textContent = teacherInfo.teacher
+  subjectNameEl.textContent = teacherInfo.subject
+}
+updateTeacherDisplay()
+
+function updateLogoDisplay(){
+  const logoData = loadLogo()
+  if(logoData){
+    logoImg.src = logoData
+    logoImg.style.display = 'block'
+    logoText.style.display = 'none'
+  } else {
+    logoImg.style.display = 'none'
+    logoText.style.display = 'block'
+  }
+}
+updateLogoDisplay()
+
+teacherNameEl.addEventListener('click', ()=>{
+  const newName = prompt('Edit teacher name:', teacherInfo.teacher)
+  if(newName && newName.trim() !== ''){
+    teacherInfo.teacher = newName.trim()
+    saveTeacherInfo(teacherInfo)
+    updateTeacherDisplay()
+  }
+})
+
+subjectNameEl.addEventListener('click', ()=>{
+  const newSubject = prompt('Edit subject name:', teacherInfo.subject)
+  if(newSubject && newSubject.trim() !== ''){
+    teacherInfo.subject = newSubject.trim()
+    saveTeacherInfo(teacherInfo)
+    updateTeacherDisplay()
+    // Update subject header if section is selected
+    const sec = findSectionById(sectionSelect.value)
+    if(sec) document.getElementById('subjectHeader').textContent = teacherInfo.subject
+  }
+})
+
+logoPlaceholder.addEventListener('click', ()=>{
+  logoUpload.click()
+})
+
+logoUpload.addEventListener('change', (e)=>{
+  const file = e.target.files[0]
+  if(!file) return
+  
+  if(!file.type.startsWith('image/')){
+    alert('Please select an image file')
+    return
+  }
+  
+  const reader = new FileReader()
+  reader.onload = (event)=>{
+    saveLogo(event.target.result)
+    updateLogoDisplay()
+  }
+  reader.readAsDataURL(file)
+})
+
+function populateSections(){
+  sectionSelect.innerHTML = ''
+  const opt = document.createElement('option'); opt.value=''; opt.textContent='-- Select section --'; sectionSelect.appendChild(opt)
+  state.sections.forEach(s=>{
+    const o = document.createElement('option'); o.value = s.id; o.textContent = s.name; sectionSelect.appendChild(o)
+  })
+}
+populateSections()
+
+function findSectionById(id){ return state.sections.find(s=>s.id===id) }
+function ensureScoresForSection(sec){
+  if(!sec) return
+  sec.students.forEach(st=>{
+    if(!sec.scores[st.id]) sec.scores[st.id] = {}
+    sec.columns.forEach(col=>{ if(sec.scores[st.id][col.id]===undefined) sec.scores[st.id][col.id] = '' })
+  })
+}
+
+function transmutedGrade(score, totalPoints){
+  if(totalPoints <= 0) return 40
+  const raw_pe = (score / totalPoints)
+  return (raw_pe * 60) + 40
+}
+
+function weightedPortion(tg, weightPercent){
+  return (tg * weightPercent) / 100
+}
+
+function gradeToLiteral(n){
+  n = Number(n)
+  if(n >= 98) return 'A+'
+  if(n >= 93) return 'A'
+  if(n >= 90) return 'A–'
+  if(n >= 85) return 'B+'
+  if(n >= 80) return 'B'
+  if(n >= 76) return 'C'
+  return 'F'
+}
+
+function isStudentFlagged(sec, studentId) {
+  for (const col of sec.columns) {
+    const score = sec.scores[studentId][col.id];
+    const passingScore = Number(col.points) * 0.60;
+    if (score !== '' && Number(score) < passingScore) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function getFailingScores(sec, studentId) {
+  const failing = []
+  for (const col of sec.columns) {
+    const score = sec.scores[studentId][col.id]
+    const passingScore = Number(col.points) * 0.60
+    if (score !== '' && Number(score) < passingScore) {
+      failing.push({
+        name: col.name,
+        score: score,
+        total: col.points,
+        passing: passingScore.toFixed(1)
+      })
+    }
+  }
+  return failing
+}
+
+function renderCaseMonitoring(sec) {
+  const escalations = loadEscalations()
+  
+  // Filter escalations for current subject and section
+  const relevantCases = escalations.filter(e => 
+    e.subject === teacherInfo.subject && 
+    sec.students.some(st => st.id === e.studentId)
+  )
+  
+  if (relevantCases.length === 0) {
+    caseMonitoring.style.display = 'none'
+    return
+  }
+  
+  caseMonitoring.style.display = 'block'
+  
+  let html = `
+    <div class="case-monitoring">
+      <h3>
+        Case Progress Monitoring
+        <button class="refresh-monitoring secondary" onclick="refreshCaseMonitoring()">Refresh</button>
+      </h3>
+  `
+  
+  relevantCases.forEach(escalation => {
+    const statusClass = escalation.status.replace(/_/g, '-')
+    const statusLabel = escalation.status === 'pending' ? 'Pending Adviser Action' :
+                        escalation.status === 'under_adviser_intervention' ? 'Under Adviser Intervention' :
+                        escalation.status === 'escalated_to_chair' ? 'Escalated to Chairperson' :
+                        escalation.status === 'under_chair_intervention' ? 'Under Chairperson Intervention' :
+                        escalation.status === 'escalated_to_ap' ? 'Escalated to AP' :
+                        escalation.status === 'under_ap_intervention' ? 'Under AP Intervention' :
+                        escalation.status === 'summer_class' ? 'Summer Class Required' :
+                        'Resolved'
+    
+    html += `
+      <div class="case-item ${statusClass}">
+        <div class="case-student-name">
+          ${escalation.studentName}
+          <span class="case-status-badge ${escalation.status}">${statusLabel}</span>
+        </div>
+        
+        <div style="font-size:12px;color:#6b7280;margin-bottom:8px">
+          <strong>Section:</strong> ${escalation.sectionName} | 
+          <strong>Escalated:</strong> ${new Date(escalation.escalatedDate).toLocaleDateString()}
+        </div>
+        
+        <div class="timeline">
+          <div class="timeline-entry">
+            <div class="timeline-header">📝 Your Intervention</div>
+            <div class="timeline-content">${escalation.teacherIntervention}</div>
+            <div class="timeline-meta">Teacher: ${teacherInfo.teacher}</div>
+          </div>
+          
+          ${escalation.adviserInterventions && escalation.adviserInterventions.length > 0 ? escalation.adviserInterventions.map(int => `
+            <div class="timeline-entry">
+              <div class="timeline-header">👤 Adviser: ${int.type}</div>
+              <div class="timeline-content">${int.notes}</div>
+              <div class="timeline-meta">${new Date(int.date).toLocaleDateString()} by ${int.by}</div>
+            </div>
+          `).join('') : '<div class="timeline-entry"><div class="timeline-content" style="color:#9ca3af">Waiting for adviser action...</div></div>'}
+          
+          ${escalation.chairEscalation ? `
+            <div class="timeline-entry">
+              <div class="timeline-header" style="color:var(--danger)">⚠️ Escalated to Chairperson</div>
+              <div class="timeline-content">${escalation.chairEscalation.summary}</div>
+              <div class="timeline-meta">${new Date(escalation.chairEscalation.date).toLocaleDateString()} by ${escalation.chairEscalation.by}</div>
+            </div>
+          ` : ''}
+          
+          ${escalation.chairInterventions && escalation.chairInterventions.length > 0 ? escalation.chairInterventions.map(int => `
+            <div class="timeline-entry">
+              <div class="timeline-header">🏛️ Chairperson: ${int.type}</div>
+              <div class="timeline-content">${int.notes}</div>
+              <div class="timeline-meta">${new Date(int.date).toLocaleDateString()}</div>
+            </div>
+          `).join('') : ''}
+          
+          ${escalation.apEscalation ? `
+            <div class="timeline-entry">
+              <div class="timeline-header" style="color:#7c2d12">⬆️ Escalated to Assistant Principal</div>
+              <div class="timeline-content">${escalation.apEscalation.summary}</div>
+              <div class="timeline-meta">${new Date(escalation.apEscalation.date).toLocaleDateString()} by ${escalation.apEscalation.by}</div>
+            </div>
+          ` : ''}
+          
+          ${escalation.apInterventions && escalation.apInterventions.length > 0 ? escalation.apInterventions.map(int => `
+            <div class="timeline-entry">
+              <div class="timeline-header">🎓 Assistant Principal: ${int.type}</div>
+              <div class="timeline-content">${int.notes}</div>
+              <div class="timeline-meta">${new Date(int.date).toLocaleDateString()} by ${int.by}</div>
+            </div>
+          `).join('') : ''}
+          
+          ${escalation.status === 'resolved' ? `
+            <div class="timeline-entry">
+              <div class="timeline-header" style="color:var(--success)">✓ Case Resolved</div>
+              <div class="timeline-content">${escalation.resolutionNotes || 'Student has improved'}</div>
+              <div class="timeline-meta">${new Date(escalation.resolvedDate).toLocaleDateString()}${escalation.resolvedBy ? ' by ' + escalation.resolvedBy : ''}</div>
+            </div>
+          ` : ''}
+          
+          ${escalation.status === 'summer_class' ? `
+            <div class="timeline-entry">
+              <div class="timeline-header" style="color:#7c2d12">⚠️ Below Standard - Summer Class Required</div>
+              <div class="timeline-content">${escalation.summerClassNotes || 'Student did not meet minimum standards'}</div>
+              <div class="timeline-meta">Tagged on ${new Date(escalation.summerClassDate).toLocaleDateString()} by ${escalation.summerClassBy}</div>
+            </div>
+          ` : ''}
+        </div>
+      </div>
+    `
+  })
+  
+  html += `</div>`
+  caseMonitoring.innerHTML = html
+}
+
+window.refreshCaseMonitoring = function() {
+  const sec = findSectionById(sectionSelect.value)
+  if (sec) {
+    renderCaseMonitoring(sec)
+  }
+}
+
+function renderGradebookForSection(sectionId){
+  const sec = findSectionById(sectionId)
+  if(!sec){ gradeCard.style.display = 'none'; return }
+  gradeCard.style.display = 'block'
+  document.getElementById('subjectHeader').textContent = teacherInfo.subject
+  recordTitle.textContent = `${sec.name} — Class Record`
+  recordMeta.textContent = `${sec.students.length} students`
+  weightsLabel.textContent = `WW ${state.weights.WW}% • PT ${state.weights.PT}% • QA ${state.weights.QA}%`
+
+  ensureScoresForSection(sec)
+
+  const cats = ['WW','PT','QA']
+  const catLabels = {WW:'WRITTEN WORK', PT:'PERFORMANCE TASK', QA:'QUARTERLY ASSESSMENT'}
+
+  tableHead.innerHTML = ''
+
+  const tr1 = document.createElement('tr')
+  tr1.appendChild(document.createElement('th'))
+  cats.forEach(cat=>{
+    const count = sec.columns.filter(c=>c.category===cat).length
+    const colspan = count + (count>0 ? 3 : 0)
+    const th = document.createElement('th')
+    th.colSpan = colspan > 0 ? colspan : 1
+    th.className = 'cat-header'
+    th.textContent = `${catLabels[cat]} (${state.weights[cat]}%)`
+    tr1.appendChild(th)
+  })
+  const f1 = document.createElement('th'); f1.rowSpan = 2; f1.textContent = 'FINAL'; tr1.appendChild(f1)
+  const f2 = document.createElement('th'); f2.rowSpan = 2; f2.textContent = 'LITERAL'; tr1.appendChild(f2)
+  const f_status = document.createElement('th'); f_status.rowSpan = 2; f_status.textContent = 'STATUS'; tr1.appendChild(f_status)
+  const f3 = document.createElement('th'); f3.rowSpan = 2; f3.textContent = 'INTERVENTION'; tr1.appendChild(f3)
+  tableHead.appendChild(tr1)
+
+  const tr2 = document.createElement('tr')
+  const nameTh = document.createElement('th'); nameTh.rowSpan = 1; nameTh.textContent = 'NAMES'; tr2.appendChild(nameTh)
+  cats.forEach(cat=>{
+    const cols = sec.columns.filter(c=>c.category===cat)
+    if(cols.length === 0){
+      const th = document.createElement('th'); th.colSpan = 1; th.textContent = '-'; tr2.appendChild(th)
+    } else {
+      cols.forEach(c => {
+        const th = document.createElement('th')
+        th.textContent = c.name + ` (${c.points}) `
+        const delBtn = document.createElement('span')
+        delBtn.textContent = '×'
+        delBtn.className = 'del-col-btn'
+        delBtn.dataset.columnId = c.id
+        delBtn.title = `Delete column '${c.name}'`
+        th.appendChild(delBtn)
+        tr2.appendChild(th)
+      })
+      const t = document.createElement('th'); t.textContent = 'Total'; tr2.appendChild(t)
+      const tg = document.createElement('th'); tg.textContent = 'TG'; tr2.appendChild(tg)
+      const wp = document.createElement('th'); wp.textContent = 'WP'; tr2.appendChild(wp)
+    }
+  })
+  tableHead.appendChild(tr2)
+
+  tableBody.innerHTML = ''
+  sec.students.forEach((student, idx) => {
+    const tr = document.createElement('tr')
+    
+    const studentIsFlagged = isStudentFlagged(sec, student.id);
+
+    const tdName = document.createElement('td'); 
+    tdName.className = 'name-col';
+    if (studentIsFlagged) {
+      tdName.classList.add('flagged-student-name');
+    }
+    const nameSpan = document.createElement('span');
+    nameSpan.className = 'editable-name';
+    nameSpan.dataset.studentId = student.id;
+    nameSpan.title = "Click to edit name";
+    nameSpan.textContent = student.name;
+    tdName.textContent = `${idx+1}. `;
+    tdName.appendChild(nameSpan);
+    tr.appendChild(tdName);
+
+    let finalNumeric = 0
+    cats.forEach(cat=>{
+      const cols = sec.columns.filter(c=>c.category===cat)
+      if(cols.length===0){
+        const td = document.createElement('td'); td.textContent = '-'; td.colSpan = 1; tr.appendChild(td)
+      } else {
+        cols.forEach(col=>{
+          const td = document.createElement('td')
+          const inp = document.createElement('input')
+          inp.className = 'score'
+          inp.type = 'number'
+          inp.min = 0
+          inp.placeholder = ''
+          const rawVal = sec.scores[student.id][col.id]
+          inp.value = rawVal === '' ? '' : rawVal
+          
+          const passingScore = Number(col.points) * 0.60
+          if (rawVal !== '' && Number(rawVal) < passingScore) {
+            inp.style.borderColor = 'var(--danger)'
+            inp.style.borderWidth = '2px'
+          }
+
+          inp.addEventListener('change', (e)=>{
+            let v = e.target.value
+            if(v === '') sec.scores[student.id][col.id] = ''
+            else {
+              v = Number(v)
+              if(isNaN(v) || v < 0) v = 0
+              if(v > Number(col.points)) v = Number(col.points)
+              sec.scores[student.id][col.id] = v
+            }
+            saveState(state); 
+            
+            // Check if student is now passing after score update
+            checkAndResolveCase(sec, student.id);
+            
+            renderGradebookForSection(sectionId)
+          })
+          td.appendChild(inp)
+          tr.appendChild(td)
+        })
+
+        const totalPts = cols.reduce((a,b)=>a + Number(b.points||0), 0)
+        const sumScore = cols.reduce((acc,c)=> acc + Number(sec.scores[student.id][c.id] || 0), 0)
+        const tdTotal = document.createElement('td'); tdTotal.textContent = sumScore; tr.appendChild(tdTotal)
+
+        const tg_val = transmutedGrade(sumScore, totalPts)
+        const tdTG = document.createElement('td'); tdTG.textContent = totalPts>0 ? tg_val.toFixed(2) : '40.00'; tr.appendChild(tdTG)
+
+        const wp = weightedPortion(tg_val, state.weights[cat])
+        const tdWP = document.createElement('td'); tdWP.textContent = wp.toFixed(2); tr.appendChild(tdWP)
+
+        finalNumeric += wp
+      }
+    })
+
+    const tdFinal = document.createElement('td'); tdFinal.textContent = finalNumeric.toFixed(2); tr.appendChild(tdFinal)
+    const tdLiteral = document.createElement('td'); tdLiteral.textContent = gradeToLiteral(finalNumeric); tr.appendChild(tdLiteral)
+
+    const tdStatus = document.createElement('td');
+    if (studentIsFlagged) {
+      tdStatus.textContent = 'LNI';
+      tdStatus.style.color = 'var(--danger)';
+      tdStatus.style.fontWeight = '700';
+    } else {
+      tdStatus.textContent = 'OK';
+    }
+    tr.appendChild(tdStatus);
+
+    const tdIntervention = document.createElement('td');
+    const intervention = sec.scores[student.id]._intervention || '';
+    const escalated = sec.scores[student.id]._escalated || false;
+    
+    if (intervention) {
+      tdIntervention.textContent = intervention.length > 20 ? intervention.substring(0, 20) + '...' : intervention;
+      tdIntervention.title = intervention;
+      
+      if (escalated) {
+        // Check escalation level from escalations data
+        const escalations = loadEscalations();
+        const escalation = escalations.find(e => 
+          e.studentId === student.id && 
+          e.sectionId === sec.id && 
+          e.subject === teacherInfo.subject
+        );
+        
+        let badgeText = 'ESCALATED TO ADVISER';
+        if (escalation) {
+          if (escalation.status === 'escalated_to_ap' || escalation.status === 'under_ap_intervention' || escalation.status === 'summer_class' || escalation.status === 'resolved') {
+            badgeText = 'ESCALATED TO AP';
+          } else if (escalation.status === 'escalated_to_chair' || escalation.status === 'under_chair_intervention') {
+            badgeText = 'ESCALATED TO CHAIRPERSON';
+          }
+        }
+        
+        const badge = document.createElement('span');
+        badge.className = 'escalated-badge';
+        badge.textContent = badgeText;
+        badge.title = badgeText;
+        tdIntervention.appendChild(badge);
+      } else if (studentIsFlagged) {
+        const escalateBtn = document.createElement('button');
+        escalateBtn.textContent = 'Escalate';
+        escalateBtn.title = 'Escalate to adviser';
+        escalateBtn.className = 'escalate-btn';
+        escalateBtn.dataset.studentId = student.id;
+        tdIntervention.appendChild(escalateBtn);
+      }
+      
+      const clearBtn = document.createElement('button');
+      clearBtn.textContent = '×';
+      clearBtn.title = 'Clear intervention';
+      clearBtn.className = 'clear-intervention-btn';
+      clearBtn.dataset.studentId = student.id;
+      tdIntervention.appendChild(clearBtn);
+    } else if (studentIsFlagged) {
+      const addBtn = document.createElement('button');
+      addBtn.textContent = 'Add Intervention';
+      addBtn.className = 'add-intervention-btn secondary';
+      addBtn.dataset.studentId = student.id;
+      tdIntervention.appendChild(addBtn);
+    } else {
+      tdIntervention.textContent = '–';
+    }
+    tr.appendChild(tdIntervention);
+    
+    tableBody.appendChild(tr)
+  })
+
+  const flagged = sec.students.filter(st => isStudentFlagged(sec, st.id)).length;
+
+  summaryStats.innerHTML = `
+    <div class="s"><div class="small muted">Students</div><div style="font-weight:700">${sec.students.length}</div></div>
+    <div class="s"><div class="small muted">Flagged (Score < 60%)</div><div style="font-weight:700;color:${ flagged ? 'var(--danger)' : '#000' }">${flagged}</div></div>
+    `
+
+  renderLNISummary(sec)
+  renderCaseMonitoring(sec)
+}
+
+function renderLNISummary(sec) {
+  const flaggedStudents = sec.students.filter(st => isStudentFlagged(sec, st.id))
+  
+  if (flaggedStudents.length === 0) {
+    lniSummary.style.display = 'none'
+    return
+  }
+  
+  lniSummary.style.display = 'block'
+  
+  let html = `
+    <div class="lni-summary">
+      <h3>Students Requiring Intervention (LNI Status)</h3>
+  `
+  
+  flaggedStudents.forEach(student => {
+    const failingScores = getFailingScores(sec, student.id)
+    const intervention = sec.scores[student.id]._intervention || 'No intervention recorded yet'
+    const finalGrade = computeFinalForStudent(sec, student.id)
+    
+    html += `
+      <div class="lni-student-item">
+        <div class="lni-student-name">${student.name}</div>
+        <div class="lni-student-details">
+          <span><strong>Final Grade:</strong> ${finalGrade.toFixed(2)} (${gradeToLiteral(finalGrade)})</span>
+          <span><strong>Failing Items:</strong> ${failingScores.length}</span>
+        </div>
+        <div class="lni-student-details" style="margin-top:4px">
+          <strong>Low Scores:</strong> 
+          ${failingScores.map(f => `${f.name}: ${f.score}/${f.total} (need ${f.passing})`).join(', ')}
+        </div>
+        <div class="lni-student-details" style="margin-top:4px">
+          <strong>Intervention:</strong> ${intervention}
+          ${(() => {
+            if (!sec.scores[student.id]._escalated) return '';
+            const escalations = loadEscalations();
+            const escalation = escalations.find(e => 
+              e.studentId === student.id && 
+              e.sectionId === sec.id && 
+              e.subject === teacherInfo.subject
+            );
+            if (!escalation) return ' <span style="color:var(--danger);font-weight:700;">[ESCALATED TO ADVISER]</span>';
+            
+            if (escalation.status === 'escalated_to_ap' || escalation.status === 'under_ap_intervention' || escalation.status === 'summer_class' || escalation.status === 'resolved') {
+              return ' <span style="color:#7c2d12;font-weight:700;">[ESCALATED TO ASSISTANT PRINCIPAL]</span>';
+            } else if (escalation.status === 'escalated_to_chair' || escalation.status === 'under_chair_intervention') {
+              return ' <span style="color:var(--danger);font-weight:700;">[ESCALATED TO CHAIRPERSON]</span>';
+            }
+            return ' <span style="color:var(--danger);font-weight:700;">[ESCALATED TO ADVISER]</span>';
+          })()}
+        </div>
+      </div>
+    `
+  })
+  
+  html += `</div>`
+  lniSummary.innerHTML = html
+}
+
+function computeFinalForStudent(sec, studentId){
+  let final = 0
+  ;['WW','PT','QA'].forEach(cat=>{
+    const cols = sec.columns.filter(c=>c.category===cat)
+    if(cols.length===0) return
+    const totalPts = cols.reduce((a,b)=>a + Number(b.points||0), 0)
+    const sumScore = cols.reduce((acc,c)=> acc + Number(sec.scores[studentId][c.id] || 0), 0)
+    
+    const tg = transmutedGrade(sumScore, totalPts)
+    const wp = weightedPortion(tg, state.weights[cat])
+    final += wp
+  })
+  return final
+}
+
+let sectionId = ''
+
+sectionSelect.addEventListener('change', (e)=>{
+  sectionId = e.target.value
+  if(!sectionId){ gradeCard.style.display = 'none'; return }
+  renderGradebookForSection(sectionId)
+})
+
+newSectionBtn.addEventListener('click', () => {
+  openModal(`
+    <h3>Create New Section</h3>
+    <div style="margin-top:12px" class="grid-2">
+      <div>
+        <label for="modal_gradeLevel">Grade Level</label>
+        <select id="modal_gradeLevel">
+          <option value="11">Grade 11</option>
+          <option value="12">Grade 12</option>
+        </select>
+      </div>
+      <div>
+        <label for="modal_sectionNumber">Section Number</label>
+        <select id="modal_sectionNumber">
+          <option value="Mayer">Mayer</option>
+          <option value="Maunoir">Maunoir</option>
+          <option value="Miki">Miki</option>
+          <option value="Nakaura">Nakaura</option>
+          <option value="Hernandez">Hernandez</option>
+          <option value="Mangin">Mangin</option>
+          <option value="Kostka">Kostka</option>
+          <option value="Sales">Sales</option>
+          <option value="Southwell">Southwell</option>
+          <option value="San Vitores">San Vitores</option>
+        </select>
+      </div>
+    </div>
+    <div style="margin-top:12px">
+      <label for="modal_students">Student Names (one per line)</label>
+      <textarea id="modal_students" placeholder="LASTNAME, FIRSTNAME M.\\nLASTNAME, FIRSTNAME M.\\n..."></textarea>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px">
+      <button id="modal_saveSection">Create Section</button>
+      <button id="modal_cancel" class="secondary">Cancel</button>
+    </div>
+  `)
+
+  document.getElementById('modal_cancel').addEventListener('click', closeModal)
+  document.getElementById('modal_saveSection').addEventListener('click', () => {
+    const gradeLevel = document.getElementById('modal_gradeLevel').value
+    const sectionNumber = document.getElementById('modal_sectionNumber').value
+    const studentsRaw = document.getElementById('modal_students').value
+    
+    const newName = `Grade ${gradeLevel} - Section ${sectionNumber}`
+    
+    const studentNames = studentsRaw.split('\n').filter(n => n.trim() !== '')
+    const students = studentNames.map((name, idx) => ({
+      id: `s_${Date.now()}_${idx}`,
+      name: name.trim()
+    }))
+    
+    const newId = `${newName.replace(/\s+/g, '-')}_${Date.now()}`
+    const newSection = {
+      id: newId,
+      name: newName,
+      students: students,
+      columns: [],
+      scores: {}
+    }
+    students.forEach(st => newSection.scores[st.id] = {})
+
+    state.sections.push(newSection)
+    saveState(state)
+    populateSections()
+    sectionSelect.value = newId
+    renderGradebookForSection(newId)
+    closeModal()
+  })
+})
+
+deleteSectionBtn.addEventListener('click', () => {
+  const secId = sectionSelect.value
+  if (!secId) { alert('Please select a section to delete.'); return }
+  const sec = findSectionById(secId)
+  if (!sec) return
+
+  openModal(`
+    <h3>Delete Section: ${sec.name}?</h3>
+    <p style="color:var(--danger);font-weight:600;">This action is permanent and cannot be undone. All student data, columns, and scores for this section will be lost.</p>
+    <div style="margin-top:12px">
+      <label for="modal_pass">Enter password to confirm deletion </label>
+      <input id="modal_pass" type="password" />
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px">
+      <button id="modal_confirmDelete" class="danger">Permanently Delete</button>
+      <button id="modal_cancel" class="secondary">Cancel</button>
+    </div>
+  `)
+
+  document.getElementById('modal_cancel').addEventListener('click', closeModal)
+  document.getElementById('modal_confirmDelete').addEventListener('click', () => {
+    const pass = document.getElementById('modal_pass').value
+    if (pass !== '123456') {
+      alert('Incorrect password. Deletion cancelled.');
+      return
+    }
+
+    // Clean up escalations before deleting section
+    cleanupEscalationsForSection(sec.name, teacherInfo.subject);
+
+    const secIndex = state.sections.findIndex(s => s.id === secId)
+    if (secIndex > -1) {
+      state.sections.splice(secIndex, 1)
+      saveState(state)
+      populateSections()
+      gradeCard.style.display = 'none'
+      closeModal()
+      alert(`Section ${sec.name} has been deleted, and all related escalations have been removed from the adviser dashboard.`)
+    }
+  })
+})
+
+addStudentBtn.addEventListener('click', () => {
+  if (!sectionSelect.value) { alert('Pick a section first'); return }
+  const sec = findSectionById(sectionSelect.value);
+  if (!sec) return;
+
+  openModal(`
+    <h3>Add Students to ${sec.name}</h3>
+    <div style="margin-top:12px">
+      <label for="modal_new_students">Student Names (one per line)</label>
+      <textarea id="modal_new_students" placeholder="LASTNAME, FIRSTNAME M.\\nLASTNAME, FIRSTNAME M.\\n..."></textarea>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px">
+      <button id="modal_add_students">Add Students</button>
+      <button id="modal_cancel" class="secondary">Cancel</button>
+    </div>
+  `);
+
+  document.getElementById('modal_cancel').addEventListener('click', closeModal);
+  document.getElementById('modal_add_students').addEventListener('click', () => {
+    const studentsRaw = document.getElementById('modal_new_students').value;
+    const studentNames = studentsRaw.split('\n').filter(n => n.trim() !== '');
+    if (studentNames.length === 0) { alert('No names entered.'); return; }
+
+    studentNames.forEach((name, idx) => {
+      const newStudent = { id: `s_${Date.now()}_${idx}`, name: name.trim() };
+      sec.students.push(newStudent);
+      sec.scores[newStudent.id] = {};
+      sec.columns.forEach(col => {
+        sec.scores[newStudent.id][col.id] = '';
+      });
+    });
+
+    saveState(state);
+    closeModal();
+    renderGradebookForSection(sec.id);
+  });
+});
+
+addColumnBtn.addEventListener('click', ()=>{
+  if(!sectionSelect.value){ alert('Pick a section first'); return }
+  openModal(`
+    <h3>Add Column</h3>
+    <div style="margin-top:8px" class="grid-2">
+      <div>
+        <label for="modal_colName">Column name</label><input id="modal_colName" placeholder="WW4, PT3, Exam2" />
+      </div>
+      <div>
+        <label for="modal_cat">Category</label>
+        <select id="modal_cat">
+          <option value="WW">Written Work</option>
+          <option value="PT">Performance Task</option>
+          <option value="QA">Quarterly Assessment</option>
+        </select>
+      </div>
+    </div>
+    <div style="margin-top:8px">
+      <label for="modal_points">Total points (e.g., 10, 20, 50)</label>
+      <input id="modal_points" type="number" min="1" value="10" />
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px">
+      <button id="modal_add">Add Column</button>
+      <button id="modal_cancel" class="secondary">Cancel</button>
+    </div>
+  `)
+
+  document.getElementById('modal_cancel').addEventListener('click', closeModal)
+  document.getElementById('modal_add').addEventListener('click', ()=>{
+    const name = document.getElementById('modal_colName').value.trim()
+    const cat = document.getElementById('modal_cat').value
+    const pts = Number(document.getElementById('modal_points').value||0)
+    if(!name || pts <= 0){ alert('Enter column name and valid total points'); return }
+    const sec = findSectionById(sectionSelect.value)
+    const id = `${cat.toLowerCase()}_${Date.now()}`
+    const col = {id, name, category:cat, points:pts}
+    sec.columns.push(col)
+    sec.students.forEach(st => { if(!sec.scores[st.id]) sec.scores[st.id] = {}; sec.scores[st.id][id] = '' })
+    saveState(state)
+    closeModal(); renderGradebookForSection(sectionSelect.value)
+  })
+})
+
+editWeightsBtn.addEventListener('click', ()=>{
+  openModal(`
+    <h3>Edit Weights (must total 100%)</h3>
+    <div class="grid-2" style="margin-top:8px">
+      <div><label for="wWW">Written Work (%)</label><input id="wWW" type="number" min="0" max="100" value="${state.weights.WW}" /></div>
+      <div><label for="wPT">Performance Task (%)</label><input id="wPT" type="number" min="0" max="100" value="${state.weights.PT}" /></div>
+    </div>
+    <div style="margin-top:8px"><label for="wQA">Quarterly Assessment (%)</label><input id="wQA" type="number" min="0" max="100" value="${state.weights.QA}" /></div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px">
+      <button id="saveWeights">Save</button>
+      <button id="cancelWeights" class="secondary">Cancel</button>
+    </div>
+  `)
+  document.getElementById('cancelWeights').addEventListener('click', closeModal)
+  document.getElementById('saveWeights').addEventListener('click', ()=>{
+    const wW = Number(document.getElementById('wWW').value||0)
+    const wPT = Number(document.getElementById('wPT').value||0)
+    const wQA = Number(document.getElementById('wQA').value||0)
+    if((wW+wPT+wQA) !== 100){ alert('Weights must add up to 100'); return }
+    state.weights = {WW:wW, PT:wPT, QA:wQA}
+    saveState(state); closeModal(); renderGradebookForSection(sectionSelect.value)
+  })
+})
+
+exportXlsxBtn.addEventListener('click', ()=>{
+  if(!sectionSelect.value){ alert('Pick a section first'); return }
+  const sec = findSectionById(sectionSelect.value)
+  
+  let header = ['Name']
+  sec.columns.forEach(c => header.push(`${c.name} (${c.points})`))
+  header.push('Status', 'Final','Literal', 'Intervention') 
+  
+  const data = [header]
+  
+  sec.students.forEach(st=>{
+    const row = [ st.name ]
+    sec.columns.forEach(c => {
+      const score = sec.scores[st.id][c.id]
+      row.push(score === '' ? '' : Number(score))
+    })
+    
+    const status = isStudentFlagged(sec, st.id) ? 'LNI' : 'OK';
+    row.push(status);
+    
+    const final = computeFinalForStudent(sec, st.id)
+    row.push(Number(final.toFixed(2)))
+    row.push(gradeToLiteral(final))
+    
+    row.push(sec.scores[st.id]._intervention || '')
+
+    data.push(row)
+  })
+
+  try {
+    const ws = XLSX.utils.aoa_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Gradebook');
+  
+    const filename = `${sec.name.replace(/\s+/g,'_')}_gradebook.xlsx`;
+    XLSX.writeFile(wb, filename);
+  } catch (e) {
+    console.error('Error exporting XLSX:', e)
+    alert('An error occurred while exporting the XLSX file.')
+  }
+})
+
+tableHead.addEventListener('click', (e) => {
+  if (e.target.dataset.columnId) {
+    const colId = e.target.dataset.columnId;
+    const sec = findSectionById(sectionSelect.value);
+    if (!sec) return;
+    
+    const col = sec.columns.find(c => c.id === colId);
+    if (!col) return;
+
+    if (confirm(`Are you sure you want to delete the column "${col.name}"? This is permanent and will remove all scores in this column.`)) {
+      sec.columns = sec.columns.filter(c => c.id !== colId);
+      
+      sec.students.forEach(st => {
+        if (sec.scores[st.id] && sec.scores[st.id][colId] !== undefined) {
+          delete sec.scores[st.id][colId];
+        }
+      });
+      
+      saveState(state);
+      renderGradebookForSection(sec.id);
+    }
+  }
+});
+
+tableBody.addEventListener('click', (e) => {
+  const sec = findSectionById(sectionSelect.value);
+  if (!sec) return;
+
+  if (e.target.classList.contains('editable-name')) {
+    const studentId = e.target.dataset.studentId;
+    const student = sec.students.find(s => s.id === studentId);
+    if (!student) return;
+
+    const newName = prompt('Edit student name:', student.name);
+    
+    if (newName && newName.trim() !== '') {
+      student.name = newName.trim();
+      saveState(state);
+      renderGradebookForSection(sec.id);
+    }
+  }
+
+  if (e.target.classList.contains('add-intervention-btn')) {
+    const studentId = e.target.dataset.studentId;
+    const student = sec.students.find(s => s.id === studentId);
+    if (!student) return;
+
+    openModal(`
+      <h3>Add Intervention for ${student.name}</h3>
+      <div style="margin-top:12px">
+        <label for="modal_intervention_narrative">Teacher's Narrative / Intervention Plan:</label>
+        <textarea id="modal_intervention_narrative" placeholder="e.g., Scheduled for a 1-on-1 conference on Monday. Will provide remedial worksheet..."></textarea>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px">
+        <button id="modal_save_intervention">Save and Notify Student</button>
+        <button id="modal_cancel" class="secondary">Cancel</button>
+      </div>
+    `);
+
+    document.getElementById('modal_cancel').addEventListener('click', closeModal);
+    
+    document.getElementById('modal_save_intervention').addEventListener('click', () => {
+      const narrative = document.getElementById('modal_intervention_narrative').value;
+      
+      if (narrative && narrative.trim() !== '') {
+        if (!sec.scores[studentId]) sec.scores[studentId] = {};
+        sec.scores[studentId]._intervention = narrative.trim();
+        saveState(state);
+        
+        const message = `An email notification has been sent to ${student.name} regarding the new intervention:\n\n"${narrative.trim()}"`;
+        alert(message);
+
+        closeModal();
+        renderGradebookForSection(sec.id);
+      } else {
+        alert('Please enter a narrative before saving.');
+      }
+    });
+  }
+
+  if (e.target.classList.contains('clear-intervention-btn')) {
+    const studentId = e.target.dataset.studentId;
+    if (sec.scores[studentId] && sec.scores[studentId]._intervention) {
+      delete sec.scores[studentId]._intervention;
+      delete sec.scores[studentId]._escalated;
+      saveState(state);
+      renderGradebookForSection(sec.id);
+    }
+  }
+
+  if (e.target.classList.contains('escalate-btn')) {
+    const studentId = e.target.dataset.studentId;
+    const student = sec.students.find(s => s.id === studentId);
+    if (!student) return;
+
+    const intervention = sec.scores[studentId]._intervention || 'No intervention recorded';
+    
+    if (confirm(`Escalate ${student.name}'s case to the adviser?\n\nThis will notify the adviser about the student's continued low performance despite intervention.\n\nCurrent intervention: ${intervention}`)) {
+      sec.scores[studentId]._escalated = true;
+      saveState(state);
+      
+      // Create escalation record for adviser dashboard
+      const escalations = loadEscalations();
+      const failingScores = getFailingScores(sec, studentId);
+      const finalGrade = computeFinalForStudent(sec, studentId);
+      
+      const newEscalation = {
+        id: `esc_${Date.now()}`,
+        studentId: studentId,
+        studentName: student.name,
+        sectionId: sec.id,
+        sectionName: sec.name,
+        subject: teacherInfo.subject,
+        teacherName: teacherInfo.teacher,
+        teacherIntervention: intervention,
+        escalatedDate: new Date().toISOString(),
+        status: 'pending',
+        finalGrade: finalGrade,
+        failingScores: failingScores,
+        adviserInterventions: [],
+        chairEscalation: null,
+        apEscalation: null,
+        resolved: false
+      };
+      
+      escalations.push(newEscalation);
+      localStorage.setItem(ESCALATIONS_KEY, JSON.stringify(escalations));
+      
+      const message = `Case ESCALATED to Adviser!\n\nStudent: ${student.name}\nTeacher: ${teacherInfo.teacher}\nSubject: ${teacherInfo.subject}\n\nIntervention History:\n${intervention}\n\nThe adviser has been notified and will follow up with additional support measures.`;
+      alert(message);
+      
+      renderGradebookForSection(sec.id);
+    }
+  }
+});
+
+function openModal(html){
+  modalBox.innerHTML = html
+  modal.style.display = 'flex'
+}
+function closeModal(){
+  modal.style.display = 'none'
+  modalBox.innerHTML = ''
+}
+modal.addEventListener('click', (e)=>{ if(e.target === modal) closeModal() })
+
+(function init(){
+  populateSections()
+  const last = sectionSelect.options.length > 1 ? sectionSelect.options[1].value : null
+  if(last) {
+    sectionSelect.value = last
+    renderGradebookForSection(last)
+  }
+})()
+
+// Check if student's case should be auto-resolved
+function checkAndResolveCase(sec, studentId) {
+  const student = sec.students.find(s => s.id === studentId);
+  if (!student) return;
+  
+  const wasEscalated = sec.scores[studentId]._escalated;
+  const isNowPassing = !isStudentFlagged(sec, studentId);
+  
+  // If student was escalated but is now passing, auto-resolve
+  if (wasEscalated && isNowPassing) {
+    // Update local student record
+    sec.scores[studentId]._escalated = false;
+    saveState(state);
+    
+    // Find and resolve escalation in adviser dashboard
+    const escalations = loadEscalations();
+    const escalation = escalations.find(e => 
+      e.studentId === studentId && 
+      e.sectionId === sec.id && 
+      e.subject === teacherInfo.subject &&
+      e.status !== 'resolved'
+    );
+    
+    if (escalation) {
+      escalation.status = 'resolved';
+      escalation.resolved = true;
+      escalation.resolvedDate = new Date().toISOString();
+      escalation.resolvedBy = teacherInfo.teacher;
+      escalation.resolutionLevel = 'Teacher';
+      escalation.resolutionNotes = 'Student scores improved to passing level. Case automatically resolved by system.';
+      escalation.autoResolved = true;
+      
+      localStorage.setItem(ESCALATIONS_KEY, JSON.stringify(escalations));
+      
+      alert(`✓ Case Resolved!\n\n${student.name} has achieved passing scores. The case has been automatically marked as resolved and the adviser has been notified.`);
+    }
+  }
+}
+
+// Auto-refresh case monitoring every 30 seconds
+setInterval(() => {
+  const sec = findSectionById(sectionSelect.value)
+  if (sec) {
+    renderCaseMonitoring(sec)
+  }
+}, 30000)
+
+</script>
+</body>
+</html>
